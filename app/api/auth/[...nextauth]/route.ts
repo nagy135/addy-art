@@ -10,6 +10,8 @@ export const runtime = 'nodejs';
 
 const secret = process.env.AUTH_SECRET || process.env.NEXTAUTH_SECRET;
 
+console.log('NextAuth route - Secret:', secret ? 'SET' : 'NOT SET');
+
 if (!secret) {
   throw new Error('AUTH_SECRET or NEXTAUTH_SECRET must be set');
 }
