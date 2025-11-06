@@ -6,23 +6,26 @@ export async function middleware(request: NextRequest) {
   const isAdminRoute = request.nextUrl.pathname.startsWith('/admin');
   const isLoginPage = request.nextUrl.pathname === '/admin/login';
 
-  // Skip middleware for login page
-  if (isLoginPage) {
-    return NextResponse.next();
-  }
-
   if (isAdminRoute) {
     const token = await getToken({
       req: request,
       secret: process.env.NEXTAUTH_SECRET,
     });
 
-    if (!token) {
-      return NextResponse.redirect(new URL('/admin/login', request.url));
+    // If on login page and already authenticated, redirect to admin dashboard
+    if (isLoginPage && token && token.role === 'admin') {
+      return NextResponse.redirect(new URL('/admin', request.url));
     }
 
-    if (token.role !== 'admin') {
-      return NextResponse.redirect(new URL('/', request.url));
+    // If not on login page, check authentication
+    if (!isLoginPage) {
+      if (!token) {
+        return NextResponse.redirect(new URL('/admin/login', request.url));
+      }
+
+      if (token.role !== 'admin') {
+        return NextResponse.redirect(new URL('/', request.url));
+      }
     }
   }
 

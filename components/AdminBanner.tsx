@@ -5,14 +5,16 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useTheme } from 'next-themes';
-import { signOut } from 'next-auth/react';
-import { ArrowLeft, Globe, LogOut, Moon, Sun } from 'lucide-react';
+import { signOut, useSession } from 'next-auth/react';
+import { ArrowLeft, Globe, LogOut, LogIn, Moon, Sun } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
 export function AdminBanner() {
   const pathname = usePathname();
   const isSubPage = pathname !== '/admin' && pathname !== '/admin/login';
+  const isLoginPage = pathname === '/admin/login';
   const { theme, setTheme } = useTheme();
+  const { data: session, status } = useSession();
   const [mounted, setMounted] = useState(false);
   
   // Avoid hydration mismatch
@@ -21,7 +23,9 @@ export function AdminBanner() {
   }, []);
   
   const handleLogout = async () => {
-    await signOut({ callbackUrl: '/' });
+    const domain = process.env.NEXT_PUBLIC_DOMAIN || process.env.NEXT_PUBLIC_NEXTAUTH_URL || window.location.origin;
+    const callbackUrl = domain.endsWith('/') ? domain.slice(0, -1) : domain;
+    await signOut({ callbackUrl });
   };
 
   return (
@@ -80,15 +84,30 @@ export function AdminBanner() {
             <Moon className="h-5 w-5" />
           </Button>
         )}
-        <Button
-          variant="outline"
-          size="sm"
-          onClick={handleLogout}
-          className="gap-2 bg-white/90 hover:bg-white dark:bg-gray-800/90 dark:hover:bg-gray-800 dark:text-white shadow-md"
-        >
-          <LogOut className="h-4 w-4" />
-          Logout
-        </Button>
+        {/* Show logout button only when logged in, login button when not logged in */}
+        {status !== 'loading' && session?.user?.role === 'admin' && (
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={handleLogout}
+            className="gap-2 bg-white/90 hover:bg-white dark:bg-gray-800/90 dark:hover:bg-gray-800 dark:text-white shadow-md"
+          >
+            <LogOut className="h-4 w-4" />
+            Logout
+          </Button>
+        )}
+        {status !== 'loading' && !session && !isLoginPage && (
+          <Link href="/admin/login">
+            <Button
+              variant="outline"
+              size="sm"
+              className="gap-2 bg-white/90 hover:bg-white dark:bg-gray-800/90 dark:hover:bg-gray-800 dark:text-white shadow-md"
+            >
+              <LogIn className="h-4 w-4" />
+              Login
+            </Button>
+          </Link>
+        )}
       </div>
     </div>
   );
