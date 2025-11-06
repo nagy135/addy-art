@@ -2,7 +2,6 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import Link from 'next/link';
 import {
   Table,
   TableBody,
@@ -18,6 +17,7 @@ type Category = {
   id: number;
   title: string;
   slug: string;
+  parentId?: number | null;
 };
 
 export function CategoriesList({ categories }: { categories: Category[] }) {
@@ -25,7 +25,7 @@ export function CategoriesList({ categories }: { categories: Category[] }) {
   const [deleting, setDeleting] = useState<number | null>(null);
 
   const handleDelete = async (id: number) => {
-    if (!confirm('Are you sure you want to delete this category?')) {
+    if (!confirm('Ste si istí, že chcete odstrániť túto kategóriu?')) {
       return;
     }
 
@@ -40,8 +40,8 @@ export function CategoriesList({ categories }: { categories: Category[] }) {
       }
 
       router.refresh();
-    } catch (error) {
-      alert('Failed to delete category. Please try again.');
+    } catch (_error) {
+      alert('Nepodarilo sa odstrániť kategóriu. Skúste znova.');
     } finally {
       setDeleting(null);
     }
@@ -52,9 +52,10 @@ export function CategoriesList({ categories }: { categories: Category[] }) {
       <Table>
         <TableHeader>
           <TableRow>
-            <TableHead>Title</TableHead>
+            <TableHead>Názov</TableHead>
             <TableHead>Slug</TableHead>
-            <TableHead className="text-right">Actions</TableHead>
+            <TableHead>Materská</TableHead>
+            <TableHead className="text-right">Akcie</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
@@ -62,16 +63,23 @@ export function CategoriesList({ categories }: { categories: Category[] }) {
             <TableRow key={category.id}>
               <TableCell className="font-medium">{category.title}</TableCell>
               <TableCell>{category.slug}</TableCell>
+              <TableCell>
+                {categories.find((c) => c.id === (category.parentId ?? -1))?.title ?? '—'}
+              </TableCell>
               <TableCell className="text-right">
                 <div className="flex justify-end gap-2">
-                  <CategoryForm categoryId={category.id} initialData={{ title: category.title }} />
+                  <CategoryForm
+                    categoryId={category.id}
+                    initialData={{ title: category.title, parentId: category.parentId ?? null }}
+                    allCategories={categories.map((c) => ({ ...c, parentId: c.parentId ?? null }))}
+                  />
                   <Button
                     variant="destructive"
                     size="sm"
                     onClick={() => handleDelete(category.id)}
                     disabled={deleting === category.id}
                   >
-                    {deleting === category.id ? 'Deleting...' : 'Delete'}
+                    {deleting === category.id ? 'Odstraňuje sa...' : 'Odstrániť'}
                   </Button>
                 </div>
               </TableCell>
@@ -80,7 +88,7 @@ export function CategoriesList({ categories }: { categories: Category[] }) {
         </TableBody>
       </Table>
       {categories.length === 0 && (
-        <p className="mt-4 text-center text-muted-foreground">No categories yet.</p>
+        <p className="mt-4 text-center text-muted-foreground">Zatiaľ žiadne kategórie.</p>
       )}
     </div>
   );

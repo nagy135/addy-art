@@ -15,6 +15,7 @@ export function Banner() {
 
   // Avoid hydration mismatch
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setMounted(true);
   }, []);
 
@@ -35,7 +36,7 @@ export function Banner() {
             variant="ghost"
             size="icon"
             onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
-            aria-label="Toggle theme"
+            aria-label="Prepnúť tému"
             className="cursor-pointer bg-white/90 hover:bg-white text-gray-900 dark:bg-gray-800/90 dark:hover:bg-gray-800 dark:text-white shadow-md"
           >
             {theme === 'dark' ? (
@@ -48,7 +49,7 @@ export function Banner() {
           <Button
             variant="ghost"
             size="icon"
-            aria-label="Toggle theme"
+            aria-label="Prepnúť tému"
             disabled
             className="cursor-pointer bg-white/90 text-gray-900 dark:bg-gray-800/90 dark:text-white shadow-md"
           >

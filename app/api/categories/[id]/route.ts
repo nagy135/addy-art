@@ -8,6 +8,7 @@ import { generateSlug } from '@/lib/generate-slug';
 
 const categorySchema = z.object({
   title: z.string().min(1),
+  parentId: z.number().int().positive().optional().nullable(),
 });
 
 export async function PUT(
@@ -29,6 +30,7 @@ export async function PUT(
       .set({
         title: validated.title,
         slug: generateSlug(validated.title),
+        parentId: validated.parentId ?? null,
       })
       .where(eq(categories.id, parseInt(id)));
 

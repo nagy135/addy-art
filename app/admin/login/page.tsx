@@ -8,7 +8,6 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
 import {
   Form,
   FormControl,
@@ -19,8 +18,8 @@ import {
 } from '@/components/ui/form';
 
 const loginSchema = z.object({
-  email: z.string().email('Invalid email address'),
-  password: z.string().min(1, 'Password is required'),
+  email: z.string().email('Neplatná e-mailová adresa'),
+  password: z.string().min(1, 'Heslo je povinné'),
 });
 
 type LoginForm = z.infer<typeof loginSchema>;
@@ -57,10 +56,10 @@ export default function AdminLoginPage() {
 
       if (result?.error) {
         console.error('Sign in error:', result.error);
-        setError('Invalid email or password');
+        setError('Neplatný e-mail alebo heslo');
       } else if (result?.ok === false) {
         console.error('Sign in failed with status:', result);
-        setError('Login failed. Please try again.');
+        setError('Prihlásenie zlyhalo. Skúste znova.');
       } else {
         // Redirect with a small delay to ensure cookie is set
         console.log('Sign in successful, redirecting to /admin');
@@ -70,7 +69,7 @@ export default function AdminLoginPage() {
       }
     } catch (err) {
       console.error('Login error:', err);
-      setError('An error occurred. Please try again.');
+      setError('Vyskytla sa chyba. Skúste znova.');
     }
   };
 
@@ -78,9 +77,9 @@ export default function AdminLoginPage() {
     <div className="flex min-h-screen items-center justify-center ">
       <div className="w-full max-w-md space-y-8 rounded-lg  p-8 shadow-md">
         <div>
-          <h2 className="text-center text-3xl font-bold">Admin Login</h2>
+          <h2 className="text-center text-3xl font-bold">Prihlásenie Správcu</h2>
           <p className="mt-2 text-center text-sm text-gray-600">
-            Sign in to manage your shop and blog
+            Prihláste sa na správu svojho obchodu a blogu
           </p>
         </div>
         <Form {...form}>
@@ -95,9 +94,9 @@ export default function AdminLoginPage() {
               name="email"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Email</FormLabel>
+                  <FormLabel>E-mail</FormLabel>
                   <FormControl>
-                    <Input type="email" placeholder="admin@example.com" {...field} />
+                    <Input type="email" placeholder="admin@priklad.com" {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -108,7 +107,7 @@ export default function AdminLoginPage() {
               name="password"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Password</FormLabel>
+                  <FormLabel>Heslo</FormLabel>
                   <FormControl>
                     <Input type="password" {...field} />
                   </FormControl>
@@ -117,7 +116,7 @@ export default function AdminLoginPage() {
               )}
             />
             <Button type="submit" className="w-full">
-              Sign In
+              Prihlásiť sa
             </Button>
           </form>
         </Form>

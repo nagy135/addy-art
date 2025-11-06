@@ -21,7 +21,7 @@ const orderSchema = z.object({
   email: z.string().email().optional(),
   phone: z.string().optional(),
 }).refine((data) => data.email || data.phone, {
-  message: 'Either email or phone is required',
+  message: 'Je potrebné e-mail alebo telefón',
   path: ['email'],
 });
 
@@ -64,9 +64,9 @@ export function ProductOrderDialog({
 
       reset();
       setOpen(false);
-      alert('Order submitted successfully!');
-    } catch (error) {
-      alert('Failed to submit order. Please try again.');
+      alert('Objednávka bola úspešne odoslaná!');
+    } catch (_error) {
+      alert('Nepodarilo sa odoslať objednávku. Skúste znova.');
     } finally {
       setSubmitting(false);
     }
@@ -75,22 +75,22 @@ export function ProductOrderDialog({
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button size="lg">Order Now</Button>
+        <Button size="lg">Objednať Teraz</Button>
       </DialogTrigger>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>Place Order</DialogTitle>
+          <DialogTitle>Zložiť Objednávku</DialogTitle>
           <DialogDescription>
-            Enter your email or phone number to place an order for {productTitle}
+            Zadajte svoju e-mailovú adresu alebo telefónne číslo pre objednávku {productTitle}
           </DialogDescription>
         </DialogHeader>
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
           <div>
-            <Label htmlFor="email" className="mb-2">Email</Label>
+            <Label htmlFor="email" className="mb-2">E-mail</Label>
             <Input
               id="email"
               type="email"
-              placeholder="your@email.com"
+              placeholder="vasa@email.com"
               {...register('email')}
             />
             {errors.email && (
@@ -98,11 +98,11 @@ export function ProductOrderDialog({
             )}
           </div>
           <div>
-            <Label htmlFor="phone" className="mb-2">Phone</Label>
+            <Label htmlFor="phone" className="mb-2">Telefón</Label>
             <Input
               id="phone"
               type="tel"
-              placeholder="+1 (555) 000-0000"
+              placeholder="+421 (910) 000-000"
               {...register('phone')}
             />
             {errors.phone && (
@@ -111,10 +111,10 @@ export function ProductOrderDialog({
           </div>
           <DialogFooter>
             <Button type="button" variant="outline" onClick={() => setOpen(false)}>
-              Cancel
+              Zrušiť
             </Button>
             <Button type="submit" disabled={submitting}>
-              {submitting ? 'Submitting...' : 'Submit Order'}
+              {submitting ? 'Odosielá sa...' : 'Odoslať Objednávku'}
             </Button>
           </DialogFooter>
         </form>

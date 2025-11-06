@@ -21,8 +21,8 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 
 const postSchema = z.object({
-  title: z.string().min(1, 'Title is required'),
-  contentMd: z.string().min(1, 'Content is required'),
+  title: z.string().min(1, 'Názov je povinný'),
+  contentMd: z.string().min(1, 'Obsah je povinný'),
   imagePath: z.string().optional(),
   published: z.boolean(),
 });
@@ -95,8 +95,8 @@ export function PostForm({
 
       const { path } = await response.json();
       setValue('imagePath', path);
-    } catch (error) {
-      alert('Failed to upload image. Please try again.');
+    } catch (_error) {
+      alert('Nepodarilo sa nahrať obrázok. Skúste znova.');
     } finally {
       setUploading(false);
     }
@@ -129,8 +129,8 @@ export function PostForm({
       }
       setOpen(false);
       router.refresh();
-    } catch (error) {
-      alert('Failed to save post. Please try again.');
+    } catch (_error) {
+      alert('Nepodarilo sa uložiť príspevok. Skúste znova.');
     } finally {
       setSubmitting(false);
     }
@@ -154,25 +154,25 @@ export function PostForm({
   return (
     <Dialog open={open} onOpenChange={handleOpenChange}>
       <DialogTrigger asChild>
-        <Button>{postId ? 'Edit' : 'Add Post'}</Button>
+        <Button>{postId ? 'Upraviť' : 'Pridať Príspevok'}</Button>
       </DialogTrigger>
       <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle>{postId ? 'Edit Post' : 'Add Post'}</DialogTitle>
+          <DialogTitle>{postId ? 'Upraviť Príspevok' : 'Pridať Príspevok'}</DialogTitle>
           <DialogDescription>
-            {postId ? 'Update post details' : 'Create a new blog post'}
+            {postId ? 'Aktualizovať detaily príspevku' : 'Vytvorať nový blogový príspevok'}
           </DialogDescription>
         </DialogHeader>
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
           <div>
-            <Label htmlFor="title" className="mb-2">Title</Label>
+            <Label htmlFor="title" className="mb-2">Názov</Label>
             <Input id="title" {...register('title')} />
             {errors.title && (
               <p className="mt-1 text-sm text-destructive">{errors.title.message}</p>
             )}
           </div>
           <div>
-            <Label htmlFor="image" className="mb-2">Image (optional)</Label>
+            <Label htmlFor="image" className="mb-2">Obrázok (voliteľne)</Label>
             <Input
               id="image"
               type="file"
@@ -185,7 +185,7 @@ export function PostForm({
               }}
               disabled={uploading}
             />
-            {uploading && <p className="mt-1 text-sm text-muted-foreground">Uploading...</p>}
+            {uploading && <p className="mt-1 text-sm text-muted-foreground">Nahrává sa...</p>}
             {imagePath && (
               <div className="mt-2 relative h-32 w-32">
                 <Image src={imagePath} alt="Preview" fill className="object-cover rounded" />
@@ -196,7 +196,7 @@ export function PostForm({
             )}
           </div>
           <div>
-            <Label htmlFor="contentMd" className="mb-2">Content (Markdown)</Label>
+            <Label htmlFor="contentMd" className="mb-2">Obsah (Markdown)</Label>
             <Textarea
               id="contentMd"
               rows={15}
@@ -214,14 +214,14 @@ export function PostForm({
               onChange={(e) => setValue('published', e.target.checked)}
               className="h-4 w-4"
             />
-            <Label htmlFor="published">Published</Label>
+            <Label htmlFor="published">Publikované</Label>
           </div>
           <DialogFooter>
             <Button type="button" variant="outline" onClick={() => setOpen(false)}>
-              Cancel
+              Zrušiť
             </Button>
             <Button type="submit" disabled={submitting || uploading}>
-              {submitting ? 'Saving...' : 'Save'}
+              {submitting ? 'Ukladá sa...' : 'Uložiť'}
             </Button>
           </DialogFooter>
         </form>

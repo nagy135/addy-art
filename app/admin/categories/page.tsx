@@ -1,6 +1,4 @@
 import { db } from '@/db';
-import { categories } from '@/db/schema';
-import { eq } from 'drizzle-orm';
 import { CategoriesList } from '@/components/admin/CategoriesList';
 import { CategoryForm } from '@/components/admin/CategoryForm';
 
@@ -15,7 +13,7 @@ export default async function AdminCategoriesPage() {
     <div className="container mx-auto px-4 py-8">
       <div className="mb-8 flex items-center justify-between">
         <h1 className="text-4xl font-bold">Categories</h1>
-        <CategoryForm />
+        <CategoryForm allCategories={allCategories} />
       </div>
       <CategoriesList categories={allCategories} />
     </div>

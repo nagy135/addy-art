@@ -1,7 +1,6 @@
 import Link from 'next/link';
 import Image from 'next/image';
 import { db } from '@/db';
-import { posts } from '@/db/schema';
 import { format } from 'date-fns';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Banner } from '@/components/Banner';
@@ -52,9 +51,28 @@ export default async function Home() {
                       )}
                     </CardHeader>
                     <CardContent className="p-0">
-                      <p className="line-clamp-3 text-sm text-muted-foreground">
-                        <ReactMarkdown>{post.contentMd}</ReactMarkdown>
-                      </p>
+                      <div className="line-clamp-3 text-sm text-muted-foreground">
+                        <ReactMarkdown
+                          components={{
+                            p: ({ children }) => <p className="mb-0">{children}</p>,
+                            a: ({ ...props }) => (
+                              <span className="text-primary underline" {...props} />
+                            ),
+                            h1: ({ children }) => <h1 className="text-lg font-bold mb-0">{children}</h1>,
+                            h2: ({ children }) => <h2 className="text-base font-bold mb-0">{children}</h2>,
+                            h3: ({ children }) => <h3 className="text-sm font-bold mb-0">{children}</h3>,
+                            ul: ({ children }) => <ul className="list-disc list-inside mb-0">{children}</ul>,
+                            ol: ({ children }) => <ol className="list-decimal list-inside mb-0">{children}</ol>,
+                            li: ({ children }) => <li className="mb-0">{children}</li>,
+                            strong: ({ children }) => <strong className="font-semibold">{children}</strong>,
+                            em: ({ children }) => <em className="italic">{children}</em>,
+                            code: ({ children }) => <code className="bg-muted px-1 py-0.5 rounded text-xs">{children}</code>,
+                            blockquote: ({ children }) => <blockquote className="border-l-4 border-muted pl-2 italic mb-0">{children}</blockquote>,
+                          }}
+                        >
+                          {post.contentMd}
+                        </ReactMarkdown>
+                      </div>
                     </CardContent>
                   </div>
                 </div>

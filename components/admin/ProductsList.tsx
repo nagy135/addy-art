@@ -3,7 +3,6 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Image from 'next/image';
-import Link from 'next/link';
 import {
   Table,
   TableBody,
@@ -47,7 +46,7 @@ export function ProductsList({
   const [deleting, setDeleting] = useState<number | null>(null);
 
   const handleDelete = async (id: number) => {
-    if (!confirm('Are you sure you want to delete this product?')) {
+    if (!confirm('Ste si istí, že chcete odstrániť tento produkt?')) {
       return;
     }
 
@@ -62,8 +61,8 @@ export function ProductsList({
       }
 
       router.refresh();
-    } catch (error) {
-      alert('Failed to delete product. Please try again.');
+    } catch (_error) {
+      alert('Nepodarilo sa odstrániť produkt. Skúste znova.');
     } finally {
       setDeleting(null);
     }
@@ -74,11 +73,11 @@ export function ProductsList({
       <Table>
         <TableHeader>
           <TableRow>
-            <TableHead>Image</TableHead>
-            <TableHead>Title</TableHead>
-            <TableHead>Category</TableHead>
-            <TableHead>Price</TableHead>
-            <TableHead className="text-right">Actions</TableHead>
+            <TableHead>Obrázok</TableHead>
+            <TableHead>Názov</TableHead>
+            <TableHead>Kategória</TableHead>
+            <TableHead>Cena</TableHead>
+            <TableHead className="text-right">Akcie</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
@@ -112,11 +111,10 @@ export function ProductsList({
                   />
                   <Button
                     variant="destructive"
-                    size="sm"
                     onClick={() => handleDelete(product.id)}
                     disabled={deleting === product.id}
                   >
-                    {deleting === product.id ? 'Deleting...' : 'Delete'}
+                    {deleting === product.id ? 'Odstraňuje sa...' : 'Odstrániť'}
                   </Button>
                 </div>
               </TableCell>
@@ -125,7 +123,7 @@ export function ProductsList({
         </TableBody>
       </Table>
       {products.length === 0 && (
-        <p className="mt-4 text-center text-muted-foreground">No products yet.</p>
+        <p className="mt-4 text-center text-muted-foreground">Zatiaľ žiadne produkty.</p>
       )}
     </div>
   );

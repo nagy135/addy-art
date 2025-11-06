@@ -28,11 +28,11 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 
 const productSchema = z.object({
-  title: z.string().min(1, 'Title is required'),
-  descriptionMd: z.string().min(1, 'Description is required'),
-  priceCents: z.number().min(1, 'Price must be at least €0.01'),
-  categoryId: z.number().min(1, 'Category is required'),
-  imagePath: z.string().min(1, 'Image is required'),
+  title: z.string().min(1, 'Názov je povinný'),
+  descriptionMd: z.string().min(1, 'Popis je povinný'),
+  priceCents: z.number().min(1, 'Cena musí byť minimálne €0,01'),
+  categoryId: z.number().min(1, 'Kategória je povinná'),
+  imagePath: z.string().min(1, 'Obrázok je povinný'),
 });
 
 type ProductFormData = z.infer<typeof productSchema>;
@@ -41,6 +41,7 @@ type Category = {
   id: number;
   title: string;
   slug: string;
+  parentId?: number | null;
 };
 
 export function ProductForm({
@@ -109,8 +110,8 @@ export function ProductForm({
 
       const { path } = await response.json();
       setValue('imagePath', path);
-    } catch (error) {
-      alert('Failed to upload image. Please try again.');
+    } catch (_error) {
+      alert('Nepodarilo sa nahrať obrázok. Skúste znova.');
     } finally {
       setUploading(false);
     }
@@ -141,8 +142,8 @@ export function ProductForm({
       }
       setOpen(false);
       router.refresh();
-    } catch (error) {
-      alert('Failed to save product. Please try again.');
+    } catch (_error) {
+      alert('Nepodarilo sa uložiť produkt. Skúste znova.');
     } finally {
       setSubmitting(false);
     }
@@ -162,38 +163,61 @@ export function ProductForm({
   return (
     <Dialog open={open} onOpenChange={handleOpenChange}>
       <DialogTrigger asChild>
-        <Button>{productId ? 'Edit' : 'Add Product'}</Button>
+        <Button>{productId ? 'Upraviť' : 'Pridať Produkt'}</Button>
       </DialogTrigger>
       <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle>{productId ? 'Edit Product' : 'Add Product'}</DialogTitle>
+          <DialogTitle>{productId ? 'Upraviť Produkt' : 'Pridať Produkt'}</DialogTitle>
           <DialogDescription>
-            {productId ? 'Update product details' : 'Create a new product'}
+            {productId ? 'Aktualizovať detaily produktu' : 'Vytvorať nový produkt'}
           </DialogDescription>
         </DialogHeader>
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
           <div>
-            <Label htmlFor="title" className="mb-2">Title</Label>
+            <Label htmlFor="title" className="mb-2">Názov</Label>
             <Input id="title" {...register('title')} />
             {errors.title && (
               <p className="mt-1 text-sm text-destructive">{errors.title.message}</p>
             )}
           </div>
           <div>
-            <Label htmlFor="categoryId" className="mb-2">Category</Label>
+            <Label htmlFor="categoryId" className="mb-2">Kategória</Label>
             <Select
               onValueChange={(value) => setValue('categoryId', parseInt(value))}
               value={categoryId?.toString()}
             >
               <SelectTrigger>
-                <SelectValue placeholder="Select a category" />
+                <SelectValue placeholder="Vyberte kategóriu" />
               </SelectTrigger>
               <SelectContent>
-                {categories.map((cat) => (
-                  <SelectItem key={cat.id} value={cat.id.toString()}>
-                    {cat.title}
-                  </SelectItem>
-                ))}
+                {(() => {
+                  const idToParentId = new Map<number, number | null>(
+                    categories.map((c) => [c.id, c.parentId ?? null])
+                  );
+                  const computeDepth = (categoryIdLocal: number): number => {
+                    let depth = 0;
+                    let current: number | null | undefined = idToParentId.get(categoryIdLocal);
+                    const seen = new Set<number>();
+                    while (current && !seen.has(current)) {
+                      depth += 1;
+                      seen.add(current);
+                      current = idToParentId.get(current) ?? null;
+                      if (depth > 10) break;
+                    }
+                    return depth;
+                  };
+                  const withDepth = categories
+                    .map((c) => ({ ...c, depth: computeDepth(c.id) }))
+                    .sort((a, b) => {
+                      if (a.depth !== b.depth) return a.depth - b.depth;
+                      return a.title.localeCompare(b.title);
+                    });
+                  return withDepth.map((cat) => (
+                    <SelectItem key={cat.id} value={cat.id.toString()}>
+                      {`${'— '.repeat(cat.depth)}${cat.title}`}
+                    </SelectItem>
+                  ));
+                })()}
               </SelectContent>
             </Select>
             {errors.categoryId && (
@@ -201,7 +225,7 @@ export function ProductForm({
             )}
           </div>
           <div>
-            <Label htmlFor="priceEuros" className="mb-2">Price (€)</Label>
+            <Label htmlFor="priceEuros" className="mb-2">Cena (€)</Label>
             <Input
               id="priceEuros"
               type="number"
@@ -222,7 +246,7 @@ export function ProductForm({
             )}
           </div>
           <div>
-            <Label htmlFor="image" className="mb-2">Image</Label>
+            <Label htmlFor="image" className="mb-2">Obrázok</Label>
             <Input
               id="image"
               type="file"
@@ -235,7 +259,7 @@ export function ProductForm({
               }}
               disabled={uploading}
             />
-            {uploading && <p className="mt-1 text-sm text-muted-foreground">Uploading...</p>}
+            {uploading && <p className="mt-1 text-sm text-muted-foreground">Nahrává sa...</p>}
             {imagePath && (
               <div className="mt-2 relative h-32 w-32">
                 <Image src={imagePath} alt="Preview" fill className="object-cover rounded" />
@@ -246,7 +270,7 @@ export function ProductForm({
             )}
           </div>
           <div>
-            <Label htmlFor="descriptionMd" className="mb-2">Description (Markdown)</Label>
+            <Label htmlFor="descriptionMd" className="mb-2">Popis (Markdown)</Label>
             <Textarea
               id="descriptionMd"
               rows={10}
@@ -258,10 +282,10 @@ export function ProductForm({
           </div>
           <DialogFooter>
             <Button type="button" variant="outline" onClick={() => setOpen(false)}>
-              Cancel
+              Zrušiť
             </Button>
             <Button type="submit" disabled={submitting || uploading}>
-              {submitting ? 'Saving...' : 'Save'}
+              {submitting ? 'Ukladá sa...' : 'Uložiť'}
             </Button>
           </DialogFooter>
         </form>

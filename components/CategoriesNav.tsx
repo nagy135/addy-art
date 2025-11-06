@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
-import { Menu, X } from 'lucide-react';
+import { Menu } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
   Sheet,
@@ -16,19 +16,23 @@ type Category = {
   id: number;
   title: string;
   slug: string;
+  parentId?: number | null;
 };
 
 const homeCategory: Category = {
   id: 0,
-  title: 'Home',
+  title: 'Domov',
   slug: '',
 };
 
 export function CategoriesNav({ categories }: { categories: Category[] }) {
   const [open, setOpen] = useState(false);
-  
+
+  // Filter to only root categories (no parentId)
+  const rootCategories = categories.filter((cat) => !cat.parentId);
+
   // Prepend home category to the list
-  const allCategories = [homeCategory, ...categories];
+  const allCategories = [homeCategory, ...rootCategories];
 
   return (
     <nav className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
@@ -36,7 +40,9 @@ export function CategoriesNav({ categories }: { categories: Category[] }) {
         {/* Desktop Navigation */}
         <div className="hidden md:flex justify-center gap-4">
           {allCategories.map((category) => (
-            <Button key={category.id} asChild variant="ghost">
+            <Button key={category.id} asChild
+              variant={category.id === 0 ? 'default' : 'outline'}
+            >
               <Link href={category.id === 0 ? '/' : `/category/${category.slug}`}>
                 <span className="capitalize">{category.title}</span>
               </Link>
@@ -50,19 +56,19 @@ export function CategoriesNav({ categories }: { categories: Category[] }) {
             <SheetTrigger asChild>
               <Button variant="outline" size="sm">
                 <Menu className="h-5 w-5" />
-                <span className="ml-2">Categories</span>
+                <span className="ml-2">Kategórie</span>
               </Button>
             </SheetTrigger>
             <SheetContent side="left">
               <SheetHeader>
-                <SheetTitle>Categories</SheetTitle>
+                <SheetTitle>Kategórie</SheetTitle>
               </SheetHeader>
-              <div className="mt-6 flex flex-col gap-2">
+              <div className="mt-6 flex flex-col gap-2 px-2">
                 {allCategories.map((category) => (
                   <Button
                     key={category.id}
                     asChild
-                    variant="ghost"
+                    variant={category.id === 0 ? 'default' : 'outline'}
                     className="justify-start"
                     onClick={() => setOpen(false)}
                   >

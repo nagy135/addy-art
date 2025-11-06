@@ -1,5 +1,4 @@
 import { db } from '@/db';
-import { posts } from '@/db/schema';
 import { PostsList } from '@/components/admin/PostsList';
 import { PostForm } from '@/components/admin/PostForm';
 import { auth } from '@/app/api/auth/[...nextauth]/route';

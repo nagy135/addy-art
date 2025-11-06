@@ -19,6 +19,7 @@ export function AdminBanner() {
   
   // Avoid hydration mismatch
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setMounted(true);
   }, []);
   
@@ -47,7 +48,7 @@ export function AdminBanner() {
           <Link href="/admin">
             <Button variant="outline" size="sm" className="bg-white/90 hover:bg-white dark:bg-gray-800/90 dark:hover:bg-gray-800 dark:text-white shadow-md">
               <ArrowLeft className="mr-2 h-4 w-4" />
-              Back to Admin
+              Späť na Správcu
             </Button>
           </Link>
         )}
@@ -64,7 +65,7 @@ export function AdminBanner() {
             variant="ghost"
             size="icon"
             onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
-            aria-label="Toggle theme"
+            aria-label="Prepnúť tému"
             className="bg-white/90 hover:bg-white text-gray-900 dark:bg-gray-800/90 dark:hover:bg-gray-800 dark:text-white shadow-md"
           >
             {theme === 'dark' ? (
@@ -77,7 +78,7 @@ export function AdminBanner() {
           <Button
             variant="ghost"
             size="icon"
-            aria-label="Toggle theme"
+            aria-label="Prepnúť tému"
             disabled
             className="bg-white/90 text-gray-900 dark:bg-gray-800/90 dark:text-white shadow-md"
           >
@@ -93,7 +94,7 @@ export function AdminBanner() {
             className="gap-2 bg-white/90 hover:bg-white dark:bg-gray-800/90 dark:hover:bg-gray-800 dark:text-white shadow-md"
           >
             <LogOut className="h-4 w-4" />
-            Logout
+            Odhlásiť sa
           </Button>
         )}
         {status !== 'loading' && !session && !isLoginPage && (
@@ -104,7 +105,7 @@ export function AdminBanner() {
               className="gap-2 bg-white/90 hover:bg-white dark:bg-gray-800/90 dark:hover:bg-gray-800 dark:text-white shadow-md"
             >
               <LogIn className="h-4 w-4" />
-              Login
+              Prihlásenie
             </Button>
           </Link>
         )}

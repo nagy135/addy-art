@@ -1,5 +1,4 @@
 import { db } from '@/db';
-import { products } from '@/db/schema';
 import { ProductsList } from '@/components/admin/ProductsList';
 import { ProductForm } from '@/components/admin/ProductForm';
 

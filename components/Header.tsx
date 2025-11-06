@@ -14,6 +14,7 @@ export function Header() {
 
   // Avoid hydration mismatch
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setMounted(true);
   }, []);
 
@@ -29,7 +30,7 @@ export function Header() {
               variant="ghost"
               size="icon"
               onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
-              aria-label="Toggle theme"
+              aria-label="Prepnúť tému"
             >
               {theme === 'dark' ? (
                 <Sun className="h-5 w-5" />
@@ -38,7 +39,7 @@ export function Header() {
               )}
             </Button>
           ) : (
-            <Button variant="ghost" size="icon" aria-label="Toggle theme" disabled>
+            <Button variant="ghost" size="icon" aria-label="Prepnúť tému" disabled>
               <Moon className="h-5 w-5" />
             </Button>
           )}
@@ -48,8 +49,8 @@ export function Header() {
             <Link href="/admin/login">
               <Button variant="outline" size="sm" className="gap-2">
                 <LogIn className="h-4 w-4" />
-                <span className="hidden sm:inline">Admin Login</span>
-                <span className="sm:hidden">Login</span>
+                <span className="hidden sm:inline">Prihlásenie Správcu</span>
+                <span className="sm:hidden">Prihlásenie</span>
               </Button>
             </Link>
           )}
@@ -58,7 +59,7 @@ export function Header() {
           {session?.user?.role === 'admin' && (
             <Link href="/admin">
               <Button variant="outline" size="sm">
-                Admin
+                Správca
               </Button>
             </Link>
           )}

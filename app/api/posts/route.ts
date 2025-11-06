@@ -2,7 +2,6 @@ import { NextRequest, NextResponse } from 'next/server';
 import { auth } from '@/app/api/auth/[...nextauth]/route';
 import { db } from '@/db';
 import { posts } from '@/db/schema';
-import { eq } from 'drizzle-orm';
 import { z } from 'zod';
 import { generateSlug } from '@/lib/generate-slug';
 

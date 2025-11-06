@@ -15,38 +15,38 @@ export default async function AdminDashboard() {
 
   return (
     <div className="container mx-auto px-4 py-8">
-      <h1 className="mb-8 text-4xl font-bold">Admin Dashboard</h1>
+      <h1 className="mb-8 text-4xl font-bold">Panel Správcu</h1>
       <div className="grid gap-6 md:grid-cols-3">
         <Card>
           <CardHeader>
-            <CardTitle>Categories</CardTitle>
-            <CardDescription>Manage product categories</CardDescription>
+            <CardTitle>Kategórie</CardTitle>
+            <CardDescription>Spravovať kategórie produktov</CardDescription>
           </CardHeader>
           <CardContent>
             <Link href="/admin/categories">
-              <Button>Manage Categories</Button>
+              <Button>Spravovať Kategórie</Button>
             </Link>
           </CardContent>
         </Card>
         <Card>
           <CardHeader>
-            <CardTitle>Products</CardTitle>
-            <CardDescription>Manage products</CardDescription>
+            <CardTitle>Produkty</CardTitle>
+            <CardDescription>Spravovať produkty</CardDescription>
           </CardHeader>
           <CardContent>
             <Link href="/admin/products">
-              <Button>Manage Products</Button>
+              <Button>Spravovať Produkty</Button>
             </Link>
           </CardContent>
         </Card>
         <Card>
           <CardHeader>
-            <CardTitle>Posts</CardTitle>
-            <CardDescription>Manage blog posts</CardDescription>
+            <CardTitle>Príspevky</CardTitle>
+            <CardDescription>Spravovať blogové príspevky</CardDescription>
           </CardHeader>
           <CardContent>
             <Link href="/admin/posts">
-              <Button>Manage Posts</Button>
+              <Button>Spravovať Príspevky</Button>
             </Link>
           </CardContent>
         </Card>

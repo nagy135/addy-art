@@ -50,6 +50,7 @@ export const categories = sqliteTable('categories', {
   id: integer('id').primaryKey({ autoIncrement: true }),
   title: text('title').notNull(),
   slug: text('slug').notNull().unique(),
+  parentId: integer('parent_id'),
   createdAt: integer('created_at', { mode: 'timestamp_ms' }).notNull().$defaultFn(() => new Date()),
 });
 
