@@ -4,25 +4,21 @@ import { getToken } from 'next-auth/jwt';
 
 const secret = process.env.AUTH_SECRET || process.env.NEXTAUTH_SECRET;
 
-console.log('Middleware loaded - Secret:', secret ? 'SET' : 'NOT SET');
-
 export async function middleware(request: NextRequest) {
   const isAdminRoute = request.nextUrl.pathname.startsWith('/admin');
   const isLoginPage = request.nextUrl.pathname === '/admin/login';
 
   if (isAdminRoute) {
-    // Log all cookies to see what's available
-    const allCookies = Array.from(request.cookies);
-    console.log('Available cookies:', allCookies.map(([k]) => k).join(', '));
-    
+    // NextAuth v5 uses 'authjs.session-token' for HTTP and '__Secure-authjs.session-token' for HTTPS
     const token = await getToken({
       req: request,
       secret,
+      cookieName: process.env.NODE_ENV === 'production' 
+        ? '__Secure-authjs.session-token'
+        : 'authjs.session-token',
     });
-    console.log('Token from getToken:', token ? 'FOUND' : 'NOT FOUND', 'Secret:', secret ? 'SET' : 'NOT SET');
-    if (!token) {
-      console.log('All cookie names:', allCookies.map(([k]) => k));
-    }
+    
+    console.log('Token found:', token ? 'YES' : 'NO', '| Attempting login to:', request.nextUrl.pathname);
 
     // If on login page and already authenticated, redirect to admin dashboard
     if (isLoginPage && token && token.role === 'admin') {
