@@ -9,7 +9,7 @@ export async function middleware(request: NextRequest) {
   if (isAdminRoute) {
     const token = await getToken({
       req: request,
-      secret: process.env.NEXTAUTH_SECRET,
+      secret: process.env.AUTH_SECRET || process.env.NEXTAUTH_SECRET,
     });
 
     // If on login page and already authenticated, redirect to admin dashboard

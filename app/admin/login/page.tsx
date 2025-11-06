@@ -46,16 +46,29 @@ export default function AdminLoginPage() {
 
   const onSubmit = async (data: LoginForm) => {
     setError(null);
-    const result = await signIn('credentials', {
-      email: data.email,
-      password: data.password,
-      redirect: false,
-    });
+    try {
+      const result = await signIn('credentials', {
+        email: data.email,
+        password: data.password,
+        redirect: false,
+        callbackUrl: '/admin',
+      });
 
-    if (result?.error) {
-      setError('Invalid email or password');
-    } else {
-      router.push('/admin');
+      if (result?.error) {
+        console.error('Sign in error:', result.error);
+        setError('Invalid email or password');
+      } else if (result?.ok) {
+        // Small delay to ensure cookie is set, then redirect
+        setTimeout(() => {
+          window.location.href = '/admin';
+        }, 100);
+      } else {
+        console.error('Unexpected sign in result:', result);
+        setError('Login failed. Please try again.');
+      }
+    } catch (err) {
+      console.error('Login error:', err);
+      setError('An error occurred. Please try again.');
     }
   };
 
