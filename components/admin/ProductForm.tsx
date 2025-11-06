@@ -1,0 +1,238 @@
+'use client';
+
+import { useState } from 'react';
+import { useRouter } from 'next/navigation';
+import Image from 'next/image';
+import { Button } from '@/components/ui/button';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from '@/components/ui/dialog';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+import { Textarea } from '@/components/ui/textarea';
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { z } from 'zod';
+
+const productSchema = z.object({
+  title: z.string().min(1, 'Title is required'),
+  slug: z.string().min(1, 'Slug is required').regex(/^[a-z0-9-]+$/, 'Slug must be lowercase letters, numbers, and hyphens only'),
+  descriptionMd: z.string().min(1, 'Description is required'),
+  priceCents: z.number().min(1, 'Price must be greater than 0'),
+  categoryId: z.number().min(1, 'Category is required'),
+  imagePath: z.string().min(1, 'Image is required'),
+});
+
+type ProductFormData = z.infer<typeof productSchema>;
+
+type Category = {
+  id: number;
+  title: string;
+  slug: string;
+};
+
+export function ProductForm({
+  productId,
+  initialData,
+  categories,
+}: {
+  productId?: number;
+  initialData?: {
+    title: string;
+    slug: string;
+    descriptionMd: string;
+    priceCents: number;
+    categoryId: number;
+    imagePath: string;
+  };
+  categories: Category[];
+}) {
+  const [open, setOpen] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
+  const [uploading, setUploading] = useState(false);
+  const router = useRouter();
+  const {
+    register,
+    handleSubmit,
+    setValue,
+    watch,
+    formState: { errors },
+    reset,
+  } = useForm<ProductFormData>({
+    resolver: zodResolver(productSchema),
+    defaultValues: initialData,
+  });
+
+  const imagePath = watch('imagePath');
+
+  const handleFileUpload = async (file: File) => {
+    setUploading(true);
+    try {
+      const formData = new FormData();
+      formData.append('file', file);
+
+      const response = await fetch('/api/upload', {
+        method: 'POST',
+        body: formData,
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to upload image');
+      }
+
+      const { path } = await response.json();
+      setValue('imagePath', path);
+    } catch (error) {
+      alert('Failed to upload image. Please try again.');
+    } finally {
+      setUploading(false);
+    }
+  };
+
+  const onSubmit = async (data: ProductFormData) => {
+    setSubmitting(true);
+    try {
+      const url = productId ? `/api/products/${productId}` : '/api/products';
+      const method = productId ? 'PUT' : 'POST';
+
+      const response = await fetch(url, {
+        method,
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data),
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to save product');
+      }
+
+      reset();
+      setOpen(false);
+      router.refresh();
+    } catch (error) {
+      alert('Failed to save product. Please try again.');
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  return (
+    <Dialog open={open} onOpenChange={setOpen}>
+      <DialogTrigger asChild>
+        <Button>{productId ? 'Edit' : 'Add Product'}</Button>
+      </DialogTrigger>
+      <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+        <DialogHeader>
+          <DialogTitle>{productId ? 'Edit Product' : 'Add Product'}</DialogTitle>
+          <DialogDescription>
+            {productId ? 'Update product details' : 'Create a new product'}
+          </DialogDescription>
+        </DialogHeader>
+        <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+          <div>
+            <Label htmlFor="title">Title</Label>
+            <Input id="title" {...register('title')} />
+            {errors.title && (
+              <p className="mt-1 text-sm text-destructive">{errors.title.message}</p>
+            )}
+          </div>
+          <div>
+            <Label htmlFor="slug">Slug</Label>
+            <Input id="slug" {...register('slug')} />
+            {errors.slug && (
+              <p className="mt-1 text-sm text-destructive">{errors.slug.message}</p>
+            )}
+          </div>
+          <div>
+            <Label htmlFor="categoryId">Category</Label>
+            <Select
+              onValueChange={(value) => setValue('categoryId', parseInt(value))}
+              defaultValue={initialData?.categoryId.toString()}
+            >
+              <SelectTrigger>
+                <SelectValue placeholder="Select a category" />
+              </SelectTrigger>
+              <SelectContent>
+                {categories.map((cat) => (
+                  <SelectItem key={cat.id} value={cat.id.toString()}>
+                    {cat.title}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            {errors.categoryId && (
+              <p className="mt-1 text-sm text-destructive">{errors.categoryId.message}</p>
+            )}
+          </div>
+          <div>
+            <Label htmlFor="priceCents">Price (in cents)</Label>
+            <Input
+              id="priceCents"
+              type="number"
+              {...register('priceCents', { valueAsNumber: true })}
+            />
+            {errors.priceCents && (
+              <p className="mt-1 text-sm text-destructive">{errors.priceCents.message}</p>
+            )}
+          </div>
+          <div>
+            <Label htmlFor="image">Image</Label>
+            <Input
+              id="image"
+              type="file"
+              accept="image/*"
+              onChange={(e) => {
+                const file = e.target.files?.[0];
+                if (file) {
+                  handleFileUpload(file);
+                }
+              }}
+              disabled={uploading}
+            />
+            {uploading && <p className="mt-1 text-sm text-muted-foreground">Uploading...</p>}
+            {imagePath && (
+              <div className="mt-2 relative h-32 w-32">
+                <Image src={imagePath} alt="Preview" fill className="object-cover rounded" />
+              </div>
+            )}
+            {errors.imagePath && (
+              <p className="mt-1 text-sm text-destructive">{errors.imagePath.message}</p>
+            )}
+          </div>
+          <div>
+            <Label htmlFor="descriptionMd">Description (Markdown)</Label>
+            <Textarea
+              id="descriptionMd"
+              rows={10}
+              {...register('descriptionMd')}
+            />
+            {errors.descriptionMd && (
+              <p className="mt-1 text-sm text-destructive">{errors.descriptionMd.message}</p>
+            )}
+          </div>
+          <DialogFooter>
+            <Button type="button" variant="outline" onClick={() => setOpen(false)}>
+              Cancel
+            </Button>
+            <Button type="submit" disabled={submitting || uploading}>
+              {submitting ? 'Saving...' : 'Save'}
+            </Button>
+          </DialogFooter>
+        </form>
+      </DialogContent>
+    </Dialog>
+  );
+}
+
