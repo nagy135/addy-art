@@ -4,10 +4,10 @@ import { db } from '@/db';
 import { posts } from '@/db/schema';
 import { eq } from 'drizzle-orm';
 import { z } from 'zod';
+import { generateSlug } from '@/lib/generate-slug';
 
 const postSchema = z.object({
   title: z.string().min(1),
-  slug: z.string().min(1).regex(/^[a-z0-9-]+$/),
   contentMd: z.string().min(1),
   imagePath: z.string().optional(),
   authorId: z.string().min(1),
@@ -26,7 +26,7 @@ export async function POST(request: NextRequest) {
 
     await db.insert(posts).values({
       title: validated.title,
-      slug: validated.slug,
+      slug: generateSlug(validated.title),
       contentMd: validated.contentMd,
       imagePath: validated.imagePath || null,
       authorId: validated.authorId,

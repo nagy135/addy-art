@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Image from 'next/image';
 import { Button } from '@/components/ui/button';
@@ -22,7 +22,6 @@ import { z } from 'zod';
 
 const postSchema = z.object({
   title: z.string().min(1, 'Title is required'),
-  slug: z.string().min(1, 'Slug is required').regex(/^[a-z0-9-]+$/, 'Slug must be lowercase letters, numbers, and hyphens only'),
   contentMd: z.string().min(1, 'Content is required'),
   imagePath: z.string().optional(),
   published: z.boolean(),
@@ -30,21 +29,22 @@ const postSchema = z.object({
 
 type PostFormData = z.infer<typeof postSchema>;
 
-export function PostForm({
-  postId,
-  initialData,
-  authorId,
-}: {
+type PostFormProps = {
   postId?: number;
   initialData?: {
     title: string;
-    slug: string;
     contentMd: string;
     imagePath?: string | null;
     publishedAt: Date | null;
   };
   authorId: string;
-}) {
+};
+
+export function PostForm({
+  postId,
+  initialData,
+  authorId,
+}: PostFormProps) {
   const [open, setOpen] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [uploading, setUploading] = useState(false);
@@ -67,6 +67,16 @@ export function PostForm({
 
   const published = watch('published');
   const imagePath = watch('imagePath');
+
+  useEffect(() => {
+    if (open && initialData) {
+      reset({
+        ...initialData,
+        imagePath: initialData.imagePath || undefined,
+        published: !!initialData.publishedAt,
+      });
+    }
+  }, [open, initialData, reset]);
 
   const handleFileUpload = async (file: File) => {
     setUploading(true);
@@ -111,7 +121,12 @@ export function PostForm({
         throw new Error('Failed to save post');
       }
 
-      reset();
+      if (postId) {
+        // Reset with the submitted data (what was just saved)
+        reset(data);
+      } else {
+        reset();
+      }
       setOpen(false);
       router.refresh();
     } catch (error) {
@@ -121,8 +136,23 @@ export function PostForm({
     }
   };
 
+  const handleOpenChange = (newOpen: boolean) => {
+    setOpen(newOpen);
+    if (newOpen && initialData) {
+      // Reset form when dialog opens with initial data
+      reset({
+        ...initialData,
+        imagePath: initialData.imagePath || undefined,
+        published: !!initialData.publishedAt,
+      });
+    } else if (!newOpen && !postId) {
+      // Reset form when closing add dialog
+      reset();
+    }
+  };
+
   return (
-    <Dialog open={open} onOpenChange={setOpen}>
+    <Dialog open={open} onOpenChange={handleOpenChange}>
       <DialogTrigger asChild>
         <Button>{postId ? 'Edit' : 'Add Post'}</Button>
       </DialogTrigger>
@@ -139,13 +169,6 @@ export function PostForm({
             <Input id="title" {...register('title')} />
             {errors.title && (
               <p className="mt-1 text-sm text-destructive">{errors.title.message}</p>
-            )}
-          </div>
-          <div>
-            <Label htmlFor="slug" className="mb-2">Slug</Label>
-            <Input id="slug" {...register('slug')} />
-            {errors.slug && (
-              <p className="mt-1 text-sm text-destructive">{errors.slug.message}</p>
             )}
           </div>
           <div>

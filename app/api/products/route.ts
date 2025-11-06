@@ -4,10 +4,10 @@ import { db } from '@/db';
 import { products } from '@/db/schema';
 import { eq } from 'drizzle-orm';
 import { z } from 'zod';
+import { generateSlug } from '@/lib/generate-slug';
 
 const productSchema = z.object({
   title: z.string().min(1),
-  slug: z.string().min(1).regex(/^[a-z0-9-]+$/),
   descriptionMd: z.string().min(1),
   priceCents: z.number().min(1),
   categoryId: z.number().min(1),
@@ -26,7 +26,7 @@ export async function POST(request: NextRequest) {
 
     await db.insert(products).values({
       title: validated.title,
-      slug: validated.slug,
+      slug: generateSlug(validated.title),
       descriptionMd: validated.descriptionMd,
       priceCents: validated.priceCents,
       categoryId: validated.categoryId,

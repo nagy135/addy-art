@@ -103,7 +103,6 @@ export function ProductsList({
                     productId={product.id}
                     initialData={{
                       title: product.title,
-                      slug: product.slug,
                       descriptionMd: product.descriptionMd,
                       priceCents: product.priceCents,
                       categoryId: product.category.id,

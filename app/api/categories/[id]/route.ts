@@ -4,10 +4,10 @@ import { db } from '@/db';
 import { categories } from '@/db/schema';
 import { eq } from 'drizzle-orm';
 import { z } from 'zod';
+import { generateSlug } from '@/lib/generate-slug';
 
 const categorySchema = z.object({
   title: z.string().min(1),
-  slug: z.string().min(1).regex(/^[a-z0-9-]+$/),
 });
 
 export async function PUT(
@@ -28,7 +28,7 @@ export async function PUT(
       .update(categories)
       .set({
         title: validated.title,
-        slug: validated.slug,
+        slug: generateSlug(validated.title),
       })
       .where(eq(categories.id, parseInt(id)));
 

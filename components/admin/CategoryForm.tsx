@@ -20,14 +20,13 @@ import { z } from 'zod';
 
 const categorySchema = z.object({
   title: z.string().min(1, 'Title is required'),
-  slug: z.string().min(1, 'Slug is required').regex(/^[a-z0-9-]+$/, 'Slug must be lowercase letters, numbers, and hyphens only'),
 });
 
 type CategoryFormData = z.infer<typeof categorySchema>;
 
 export function CategoryForm({ categoryId, initialData }: {
   categoryId?: number;
-  initialData?: { title: string; slug: string };
+  initialData?: { title: string };
 }) {
   const [open, setOpen] = useState(false);
   const [submitting, setSubmitting] = useState(false);
@@ -86,13 +85,6 @@ export function CategoryForm({ categoryId, initialData }: {
             <Input id="title" {...register('title')} />
             {errors.title && (
               <p className="mt-1 text-sm text-destructive">{errors.title.message}</p>
-            )}
-          </div>
-          <div>
-            <Label htmlFor="slug" className="mb-2">Slug</Label>
-            <Input id="slug" {...register('slug')} />
-            {errors.slug && (
-              <p className="mt-1 text-sm text-destructive">{errors.slug.message}</p>
             )}
           </div>
           <DialogFooter>

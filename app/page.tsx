@@ -6,6 +6,7 @@ import { format } from 'date-fns';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Banner } from '@/components/Banner';
 import { CategoriesNav } from '@/components/CategoriesNav';
+import ReactMarkdown from 'react-markdown';
 
 export const dynamic = 'force-dynamic';
 
@@ -26,7 +27,7 @@ export default async function Home() {
       <CategoriesNav categories={categories} />
       <div className="container mx-auto px-4 py-8">
         <h2 className="mb-6 text-3xl font-bold">Blog</h2>
-        <div className="space-y-6">
+        <div className="flex flex-col gap-6">
           {publishedPosts.map((post) => (
             <Link key={post.id} href={`/blog/${post.slug}`}>
               <Card className="transition-shadow hover:shadow-lg overflow-hidden">
@@ -52,7 +53,7 @@ export default async function Home() {
                     </CardHeader>
                     <CardContent className="p-0">
                       <p className="line-clamp-3 text-sm text-muted-foreground">
-                        {post.contentMd.substring(0, 200)}...
+                        <ReactMarkdown>{post.contentMd}</ReactMarkdown>
                       </p>
                     </CardContent>
                   </div>

@@ -88,7 +88,6 @@ export function PostsList({
                     postId={post.id}
                     initialData={{
                       title: post.title,
-                      slug: post.slug,
                       contentMd: post.contentMd,
                       imagePath: post.imagePath,
                       publishedAt: post.publishedAt,

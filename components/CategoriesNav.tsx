@@ -18,17 +18,26 @@ type Category = {
   slug: string;
 };
 
+const homeCategory: Category = {
+  id: 0,
+  title: 'Home',
+  slug: '',
+};
+
 export function CategoriesNav({ categories }: { categories: Category[] }) {
   const [open, setOpen] = useState(false);
+  
+  // Prepend home category to the list
+  const allCategories = [homeCategory, ...categories];
 
   return (
-    <nav className="border-b">
+    <nav className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
       <div className="container mx-auto px-4 py-4">
         {/* Desktop Navigation */}
         <div className="hidden md:flex justify-center gap-4">
-          {categories.map((category) => (
+          {allCategories.map((category) => (
             <Button key={category.id} asChild variant="ghost">
-              <Link href={`/category/${category.slug}`}>
+              <Link href={category.id === 0 ? '/' : `/category/${category.slug}`}>
                 <span className="capitalize">{category.title}</span>
               </Link>
             </Button>
@@ -49,7 +58,7 @@ export function CategoriesNav({ categories }: { categories: Category[] }) {
                 <SheetTitle>Categories</SheetTitle>
               </SheetHeader>
               <div className="mt-6 flex flex-col gap-2">
-                {categories.map((category) => (
+                {allCategories.map((category) => (
                   <Button
                     key={category.id}
                     asChild
@@ -57,7 +66,7 @@ export function CategoriesNav({ categories }: { categories: Category[] }) {
                     className="justify-start"
                     onClick={() => setOpen(false)}
                   >
-                    <Link href={`/category/${category.slug}`}>
+                    <Link href={category.id === 0 ? '/' : `/category/${category.slug}`}>
                       {category.title}
                     </Link>
                   </Button>

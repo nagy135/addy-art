@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Image from 'next/image';
 import { Button } from '@/components/ui/button';
@@ -29,9 +29,8 @@ import { z } from 'zod';
 
 const productSchema = z.object({
   title: z.string().min(1, 'Title is required'),
-  slug: z.string().min(1, 'Slug is required').regex(/^[a-z0-9-]+$/, 'Slug must be lowercase letters, numbers, and hyphens only'),
   descriptionMd: z.string().min(1, 'Description is required'),
-  priceCents: z.number().min(1, 'Price must be greater than 0'),
+  priceCents: z.number().min(1, 'Price must be at least €0.01'),
   categoryId: z.number().min(1, 'Category is required'),
   imagePath: z.string().min(1, 'Image is required'),
 });
@@ -52,7 +51,6 @@ export function ProductForm({
   productId?: number;
   initialData?: {
     title: string;
-    slug: string;
     descriptionMd: string;
     priceCents: number;
     categoryId: number;
@@ -73,10 +71,26 @@ export function ProductForm({
     reset,
   } = useForm<ProductFormData>({
     resolver: zodResolver(productSchema),
-    defaultValues: initialData,
+    defaultValues: initialData
+      ? {
+          ...initialData,
+          priceCents: initialData.priceCents,
+        }
+      : undefined,
   });
 
   const imagePath = watch('imagePath');
+  const categoryId = watch('categoryId');
+  const priceCents = watch('priceCents');
+
+  // Convert cents to euros for display
+  const priceEuros = priceCents && priceCents > 0 ? (priceCents / 100).toString() : '';
+
+  useEffect(() => {
+    if (open && initialData) {
+      reset(initialData);
+    }
+  }, [open, initialData, reset]);
 
   const handleFileUpload = async (file: File) => {
     setUploading(true);
@@ -108,6 +122,7 @@ export function ProductForm({
       const url = productId ? `/api/products/${productId}` : '/api/products';
       const method = productId ? 'PUT' : 'POST';
 
+      // Data already has priceCents, no conversion needed here since we convert on input change
       const response = await fetch(url, {
         method,
         headers: { 'Content-Type': 'application/json' },
@@ -118,7 +133,12 @@ export function ProductForm({
         throw new Error('Failed to save product');
       }
 
-      reset();
+      if (productId) {
+        // Reset with the submitted data (what was just saved)
+        reset(data);
+      } else {
+        reset();
+      }
       setOpen(false);
       router.refresh();
     } catch (error) {
@@ -128,8 +148,19 @@ export function ProductForm({
     }
   };
 
+  const handleOpenChange = (newOpen: boolean) => {
+    setOpen(newOpen);
+    if (newOpen && initialData) {
+      // Reset form when dialog opens with initial data
+      reset(initialData);
+    } else if (!newOpen && !productId) {
+      // Reset form when closing add dialog
+      reset();
+    }
+  };
+
   return (
-    <Dialog open={open} onOpenChange={setOpen}>
+    <Dialog open={open} onOpenChange={handleOpenChange}>
       <DialogTrigger asChild>
         <Button>{productId ? 'Edit' : 'Add Product'}</Button>
       </DialogTrigger>
@@ -149,17 +180,10 @@ export function ProductForm({
             )}
           </div>
           <div>
-            <Label htmlFor="slug" className="mb-2">Slug</Label>
-            <Input id="slug" {...register('slug')} />
-            {errors.slug && (
-              <p className="mt-1 text-sm text-destructive">{errors.slug.message}</p>
-            )}
-          </div>
-          <div>
             <Label htmlFor="categoryId" className="mb-2">Category</Label>
             <Select
               onValueChange={(value) => setValue('categoryId', parseInt(value))}
-              defaultValue={initialData?.categoryId.toString()}
+              value={categoryId?.toString()}
             >
               <SelectTrigger>
                 <SelectValue placeholder="Select a category" />
@@ -177,11 +201,21 @@ export function ProductForm({
             )}
           </div>
           <div>
-            <Label htmlFor="priceCents" className="mb-2">Price (in cents)</Label>
+            <Label htmlFor="priceEuros" className="mb-2">Price (€)</Label>
             <Input
-              id="priceCents"
+              id="priceEuros"
               type="number"
-              {...register('priceCents', { valueAsNumber: true })}
+              step="0.01"
+              min="0.01"
+              value={priceEuros}
+              onChange={(e) => {
+                const euros = parseFloat(e.target.value);
+                if (!isNaN(euros) && euros > 0) {
+                  setValue('priceCents', Math.round(euros * 100), { shouldValidate: true });
+                } else if (e.target.value === '') {
+                  setValue('priceCents', 0, { shouldValidate: false });
+                }
+              }}
             />
             {errors.priceCents && (
               <p className="mt-1 text-sm text-destructive">{errors.priceCents.message}</p>

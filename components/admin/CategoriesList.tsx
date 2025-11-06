@@ -64,7 +64,7 @@ export function CategoriesList({ categories }: { categories: Category[] }) {
               <TableCell>{category.slug}</TableCell>
               <TableCell className="text-right">
                 <div className="flex justify-end gap-2">
-                  <CategoryForm categoryId={category.id} initialData={category} />
+                  <CategoryForm categoryId={category.id} initialData={{ title: category.title }} />
                   <Button
                     variant="destructive"
                     size="sm"
