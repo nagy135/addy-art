@@ -9,6 +9,7 @@ import bcrypt from 'bcryptjs';
 export const runtime = 'nodejs';
 
 export const { handlers, signIn, signOut, auth } = NextAuth({
+  // @ts-expect-error - Type compatibility issue between NextAuth v5 beta and @auth/drizzle-adapter
   adapter: DrizzleAdapter(db),
   session: { strategy: 'jwt' },
   pages: {
