@@ -13,6 +13,7 @@ export async function middleware(request: NextRequest) {
       req: request,
       secret,
     });
+    console.log('================\n', 'token: ', token, '\n================');
 
     // If on login page and already authenticated, redirect to admin dashboard
     if (isLoginPage && token && token.role === 'admin') {
