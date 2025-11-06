@@ -10,6 +10,7 @@ services:
       - "13777:3000"
     environment:
       - NODE_ENV=production
+      - AUTH_TRUST_HOST=true
     env_file:
       - .env
     volumes:
