@@ -13,12 +13,11 @@ export async function middleware(request: NextRequest) {
     const token = await getToken({
       req: request,
       secret,
-      cookieName: process.env.NODE_ENV === 'production' 
+      cookieName: process.env.NODE_ENV === 'production'
         ? '__Secure-authjs.session-token'
         : 'authjs.session-token',
     });
-    
-    console.log('Token found:', token ? 'YES' : 'NO', '| Attempting login to:', request.nextUrl.pathname);
+
 
     // If on login page and already authenticated, redirect to admin dashboard
     if (isLoginPage && token && token.role === 'admin') {

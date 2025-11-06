@@ -54,7 +54,6 @@ export default function AdminLoginPage() {
         callbackUrl: '/admin',
       });
 
-      console.log('Sign in result:', result);
 
       if (result?.error) {
         console.error('Sign in error:', result.error);
