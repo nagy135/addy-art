@@ -12,9 +12,8 @@ export async function middleware(request: NextRequest) {
 
   if (isAdminRoute) {
     // Log all cookies to see what's available
-    const cookies = request.cookies.getSetCookie();
     const allCookies = Array.from(request.cookies);
-    console.log('Available cookies:', allCookies.map(([k, v]) => `${k}=${v.substring(0, 50)}...`));
+    console.log('Available cookies:', allCookies.map(([k]) => k).join(', '));
     
     const token = await getToken({
       req: request,
@@ -22,7 +21,7 @@ export async function middleware(request: NextRequest) {
     });
     console.log('Token from getToken:', token ? 'FOUND' : 'NOT FOUND', 'Secret:', secret ? 'SET' : 'NOT SET');
     if (!token) {
-      console.log('Cookie entries:', allCookies);
+      console.log('All cookie names:', allCookies.map(([k]) => k));
     }
 
     // If on login page and already authenticated, redirect to admin dashboard
