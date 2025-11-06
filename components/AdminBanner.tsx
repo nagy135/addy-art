@@ -34,9 +34,9 @@ export function AdminBanner() {
         </Link>
       </div>
       <div className="absolute right-4 top-4">
-        <Button 
-          variant="outline" 
-          size="sm" 
+        <Button
+          variant="outline"
+          size="sm"
           onClick={handleLogout}
           className="gap-2 bg-white/90 hover:bg-white dark:bg-gray-800/90 dark:hover:bg-gray-800 dark:text-white shadow-md"
         >

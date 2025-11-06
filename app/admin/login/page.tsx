@@ -52,8 +52,8 @@ export default function AdminLoginPage() {
   };
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-gray-50">
-      <div className="w-full max-w-md space-y-8 rounded-lg bg-white p-8 shadow-md">
+    <div className="flex min-h-screen items-center justify-center ">
+      <div className="w-full max-w-md space-y-8 rounded-lg  p-8 shadow-md">
         <div>
           <h2 className="text-center text-3xl font-bold">Admin Login</h2>
           <p className="mt-2 text-center text-sm text-gray-600">
@@ -63,7 +63,7 @@ export default function AdminLoginPage() {
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
             {error && (
-              <div className="rounded-md bg-red-50 p-3 text-sm text-red-800">
+              <div className="rounded-md  p-3 text-sm text-red-800">
                 {error}
               </div>
             )}
