@@ -8,6 +8,7 @@ export default async function AdminDashboard() {
   const session = await auth();
 
   if (!session?.user || session.user.role !== 'admin') {
+    console.log('================\n', 'redirect: ', redirect, '\n================');
     redirect('/admin/login');
   }
 
