@@ -135,21 +135,21 @@ export function PostForm({
         </DialogHeader>
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
           <div>
-            <Label htmlFor="title">Title</Label>
+            <Label htmlFor="title" className="mb-2">Title</Label>
             <Input id="title" {...register('title')} />
             {errors.title && (
               <p className="mt-1 text-sm text-destructive">{errors.title.message}</p>
             )}
           </div>
           <div>
-            <Label htmlFor="slug">Slug</Label>
+            <Label htmlFor="slug" className="mb-2">Slug</Label>
             <Input id="slug" {...register('slug')} />
             {errors.slug && (
               <p className="mt-1 text-sm text-destructive">{errors.slug.message}</p>
             )}
           </div>
           <div>
-            <Label htmlFor="image">Image (optional)</Label>
+            <Label htmlFor="image" className="mb-2">Image (optional)</Label>
             <Input
               id="image"
               type="file"
@@ -173,7 +173,7 @@ export function PostForm({
             )}
           </div>
           <div>
-            <Label htmlFor="contentMd">Content (Markdown)</Label>
+            <Label htmlFor="contentMd" className="mb-2">Content (Markdown)</Label>
             <Textarea
               id="contentMd"
               rows={15}

@@ -86,7 +86,7 @@ export function ProductOrderDialog({
         </DialogHeader>
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
           <div>
-            <Label htmlFor="email">Email</Label>
+            <Label htmlFor="email" className="mb-2">Email</Label>
             <Input
               id="email"
               type="email"
@@ -98,7 +98,7 @@ export function ProductOrderDialog({
             )}
           </div>
           <div>
-            <Label htmlFor="phone">Phone</Label>
+            <Label htmlFor="phone" className="mb-2">Phone</Label>
             <Input
               id="phone"
               type="tel"

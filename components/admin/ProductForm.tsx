@@ -142,21 +142,21 @@ export function ProductForm({
         </DialogHeader>
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
           <div>
-            <Label htmlFor="title">Title</Label>
+            <Label htmlFor="title" className="mb-2">Title</Label>
             <Input id="title" {...register('title')} />
             {errors.title && (
               <p className="mt-1 text-sm text-destructive">{errors.title.message}</p>
             )}
           </div>
           <div>
-            <Label htmlFor="slug">Slug</Label>
+            <Label htmlFor="slug" className="mb-2">Slug</Label>
             <Input id="slug" {...register('slug')} />
             {errors.slug && (
               <p className="mt-1 text-sm text-destructive">{errors.slug.message}</p>
             )}
           </div>
           <div>
-            <Label htmlFor="categoryId">Category</Label>
+            <Label htmlFor="categoryId" className="mb-2">Category</Label>
             <Select
               onValueChange={(value) => setValue('categoryId', parseInt(value))}
               defaultValue={initialData?.categoryId.toString()}
@@ -177,7 +177,7 @@ export function ProductForm({
             )}
           </div>
           <div>
-            <Label htmlFor="priceCents">Price (in cents)</Label>
+            <Label htmlFor="priceCents" className="mb-2">Price (in cents)</Label>
             <Input
               id="priceCents"
               type="number"
@@ -188,7 +188,7 @@ export function ProductForm({
             )}
           </div>
           <div>
-            <Label htmlFor="image">Image</Label>
+            <Label htmlFor="image" className="mb-2">Image</Label>
             <Input
               id="image"
               type="file"
@@ -212,7 +212,7 @@ export function ProductForm({
             )}
           </div>
           <div>
-            <Label htmlFor="descriptionMd">Description (Markdown)</Label>
+            <Label htmlFor="descriptionMd" className="mb-2">Description (Markdown)</Label>
             <Textarea
               id="descriptionMd"
               rows={10}

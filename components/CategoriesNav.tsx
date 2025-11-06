@@ -29,7 +29,7 @@ export function CategoriesNav({ categories }: { categories: Category[] }) {
           {categories.map((category) => (
             <Button key={category.id} asChild variant="ghost">
               <Link href={`/category/${category.slug}`}>
-                {category.title}
+                <span className="capitalize">{category.title}</span>
               </Link>
             </Button>
           ))}

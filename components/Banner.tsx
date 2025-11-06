@@ -36,12 +36,12 @@ export function Banner() {
             size="icon"
             onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
             aria-label="Toggle theme"
-            className="bg-white/90 hover:bg-white text-gray-900 dark:bg-gray-800/90 dark:hover:bg-gray-800 dark:text-white shadow-md"
+            className="cursor-pointer bg-white/90 hover:bg-white text-gray-900 dark:bg-gray-800/90 dark:hover:bg-gray-800 dark:text-white shadow-md"
           >
             {theme === 'dark' ? (
-              <Sun className="h-5 w-5" />
+              <Sun className="h-4 w-4" />
             ) : (
-              <Moon className="h-5 w-5" />
+              <Moon className="h-4 w-4" />
             )}
           </Button>
         ) : (
@@ -50,9 +50,9 @@ export function Banner() {
             size="icon"
             aria-label="Toggle theme"
             disabled
-            className="bg-white/90 text-gray-900 dark:bg-gray-800/90 dark:text-white shadow-md"
+            className="cursor-pointer bg-white/90 text-gray-900 dark:bg-gray-800/90 dark:text-white shadow-md"
           >
-            <Moon className="h-5 w-5" />
+            <Moon className="h-4 w-4" />
           </Button>
         )}
 
@@ -62,11 +62,9 @@ export function Banner() {
             <Button
               variant="outline"
               size="sm"
-              className="gap-2 bg-white/90 hover:bg-white text-gray-900 border-gray-300 dark:bg-gray-800/90 dark:hover:bg-gray-800 dark:text-white dark:border-gray-600 shadow-md"
+              className="cursor-pointer gap-2 bg-white/90 hover:bg-white text-gray-900 border-gray-300 dark:bg-gray-800/90 dark:hover:bg-gray-800 dark:text-white dark:border-gray-600 shadow-md"
             >
               <LogIn className="h-4 w-4" />
-              <span className="hidden sm:inline">Admin Login</span>
-              <span className="sm:hidden">Login</span>
             </Button>
           </Link>
         )}
