@@ -8,9 +8,16 @@ import bcrypt from 'bcryptjs';
 
 export const runtime = 'nodejs';
 
+const secret = process.env.AUTH_SECRET || process.env.NEXTAUTH_SECRET;
+
+if (!secret) {
+  throw new Error('AUTH_SECRET or NEXTAUTH_SECRET must be set');
+}
+
 export const { handlers, signIn, signOut, auth } = NextAuth({
   // @ts-expect-error - Type compatibility issue between NextAuth v5 beta and @auth/drizzle-adapter
   adapter: DrizzleAdapter(db),
+  secret,
   trustHost: true,
   session: { strategy: 'jwt' },
   pages: {

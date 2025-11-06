@@ -2,6 +2,8 @@ import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
 import { getToken } from 'next-auth/jwt';
 
+const secret = process.env.AUTH_SECRET || process.env.NEXTAUTH_SECRET;
+
 export async function middleware(request: NextRequest) {
   const isAdminRoute = request.nextUrl.pathname.startsWith('/admin');
   const isLoginPage = request.nextUrl.pathname === '/admin/login';
@@ -9,7 +11,7 @@ export async function middleware(request: NextRequest) {
   if (isAdminRoute) {
     const token = await getToken({
       req: request,
-      secret: process.env.AUTH_SECRET || process.env.NEXTAUTH_SECRET,
+      secret,
     });
 
     // If on login page and already authenticated, redirect to admin dashboard

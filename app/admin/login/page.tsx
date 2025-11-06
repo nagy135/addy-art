@@ -54,17 +54,20 @@ export default function AdminLoginPage() {
         callbackUrl: '/admin',
       });
 
+      console.log('Sign in result:', result);
+
       if (result?.error) {
         console.error('Sign in error:', result.error);
         setError('Invalid email or password');
-      } else if (result?.ok) {
-        // Small delay to ensure cookie is set, then redirect
+      } else if (result?.ok === false) {
+        console.error('Sign in failed with status:', result);
+        setError('Login failed. Please try again.');
+      } else {
+        // Redirect with a small delay to ensure cookie is set
+        console.log('Sign in successful, redirecting to /admin');
         setTimeout(() => {
           window.location.href = '/admin';
-        }, 100);
-      } else {
-        console.error('Unexpected sign in result:', result);
-        setError('Login failed. Please try again.');
+        }, 200);
       }
     } catch (err) {
       console.error('Login error:', err);
