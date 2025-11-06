@@ -1,0 +1,18 @@
+version: '3.8'
+
+services:
+  addy-art:
+    container_name: addy-art
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "13777:3000"
+    environment:
+      - NODE_ENV=production
+    volumes:
+      - ./data:/app/.data:rw
+      - ./public/uploads:/app/public/uploads:rw
+    user: "root"
+    restart: unless-stopped
+
