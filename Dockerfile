@@ -63,6 +63,15 @@ RUN chown nextjs:nodejs .next
 COPY --from=builder --chown=nextjs:nodejs /app/.next/standalone ./
 COPY --from=builder --chown=nextjs:nodejs /app/.next/static ./.next/static
 
+# Copy necessary files for database migrations
+COPY --from=builder --chown=nextjs:nodejs /app/db ./db
+COPY --from=builder --chown=nextjs:nodejs /app/drizzle.config.ts ./
+COPY --from=builder --chown=nextjs:nodejs /app/package.json ./
+COPY --from=builder --chown=nextjs:nodejs /app/scripts ./scripts
+
+# Copy node_modules for drizzle-kit (needed for db:push)
+COPY --from=builder --chown=nextjs:nodejs /app/node_modules ./node_modules
+
 # Create logs directory and files with proper permissions
 RUN mkdir -p /app/logs && \
     touch /app/logs/error.log /app/logs/combined.log && \
@@ -70,9 +79,12 @@ RUN mkdir -p /app/logs && \
     chown -R nextjs:nodejs /app/logs
 
 # Create data directory with proper permissions
-RUN mkdir -p /app/data && \
-    chmod 777 /app/data && \
-    chown -R nextjs:nodejs /app/data
+RUN mkdir -p /app/.data && \
+    chmod 777 /app/.data && \
+    chown -R nextjs:nodejs /app/.data
+
+# Make entrypoint script executable
+RUN chmod +x /app/scripts/docker-entrypoint.sh
 
 USER nextjs
 
@@ -80,6 +92,5 @@ EXPOSE 3000
 
 ENV PORT 3000
 
-# server.js is created by next build from the standalone output
-# https://nextjs.org/docs/pages/api-reference/next-config-js/output
-CMD HOSTNAME="0.0.0.0" node server.js 
+# Use entrypoint script to run migrations before starting server
+CMD HOSTNAME="0.0.0.0" /app/scripts/docker-entrypoint.sh 
