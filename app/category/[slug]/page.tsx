@@ -9,6 +9,8 @@ import { formatPrice } from '@/lib/format-price';
 import { Banner } from '@/components/Banner';
 import { CategoriesNav } from '@/components/CategoriesNav';
 
+export const dynamic = 'force-dynamic';
+
 export default async function CategoryPage({
   params,
 }: {

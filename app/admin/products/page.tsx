@@ -3,6 +3,8 @@ import { products } from '@/db/schema';
 import { ProductsList } from '@/components/admin/ProductsList';
 import { ProductForm } from '@/components/admin/ProductForm';
 
+export const dynamic = 'force-dynamic';
+
 export default async function AdminProductsPage() {
   const allProducts = await db.query.products.findMany({
     with: {

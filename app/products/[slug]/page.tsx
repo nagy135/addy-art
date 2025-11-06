@@ -9,6 +9,8 @@ import { ProductOrderDialog } from '@/components/ProductOrderDialog';
 import { Banner } from '@/components/Banner';
 import { CategoriesNav } from '@/components/CategoriesNav';
 
+export const dynamic = 'force-dynamic';
+
 export default async function ProductPage({
   params,
 }: {

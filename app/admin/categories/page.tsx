@@ -4,6 +4,8 @@ import { eq } from 'drizzle-orm';
 import { CategoriesList } from '@/components/admin/CategoriesList';
 import { CategoryForm } from '@/components/admin/CategoryForm';
 
+export const dynamic = 'force-dynamic';
+
 export default async function AdminCategoriesPage() {
   const allCategories = await db.query.categories.findMany({
     orderBy: (categories, { asc }) => [asc(categories.title)],

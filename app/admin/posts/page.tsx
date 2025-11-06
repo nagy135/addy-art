@@ -4,6 +4,8 @@ import { PostsList } from '@/components/admin/PostsList';
 import { PostForm } from '@/components/admin/PostForm';
 import { auth } from '@/app/api/auth/[...nextauth]/route';
 
+export const dynamic = 'force-dynamic';
+
 export default async function AdminPostsPage() {
   const session = await auth();
   if (!session?.user) {

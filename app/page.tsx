@@ -7,6 +7,8 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Banner } from '@/components/Banner';
 import { CategoriesNav } from '@/components/CategoriesNav';
 
+export const dynamic = 'force-dynamic';
+
 export default async function Home() {
   const publishedPosts = await db.query.posts.findMany({
     where: (posts, { isNotNull }) => isNotNull(posts.publishedAt),
