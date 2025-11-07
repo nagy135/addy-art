@@ -13,6 +13,7 @@ type Product = {
   descriptionMd: string;
   priceCents: number;
   imagePath: string;
+  images?: { imagePath: string; isThumbnail: boolean }[];
 };
 
 const ProductCard = ({ product }: { product: Product }) => {
@@ -58,7 +59,8 @@ export function ProductsGrid({ products }: { products: Product[] }) {
               ratios[product.id] = false;
               resolve();
             };
-            img.src = product.imagePath;
+            const thumb = product.images?.find((i) => i.isThumbnail)?.imagePath || product.imagePath;
+            img.src = thumb;
           });
         })
       );
@@ -81,7 +83,7 @@ export function ProductsGrid({ products }: { products: Product[] }) {
     id: product.id,
     content: <ProductCard product={product} />,
     className: imageAspectRatios[product.id] ? 'md:col-span-2' : 'col-span-1',
-    thumbnail: product.imagePath,
+    thumbnail: product.images?.find((i) => i.isThumbnail)?.imagePath || product.imagePath,
   }));
 
 

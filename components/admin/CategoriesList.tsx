@@ -13,6 +13,7 @@ import {
 import { Button } from '@/components/ui/button';
 import { CategoryForm } from './CategoryForm';
 import { useI18n } from '@/components/I18nProvider';
+import { CategoryProductsOrderDialog } from './CategoryProductsOrderDialog';
 
 type Category = {
   id: number;
@@ -70,6 +71,10 @@ export function CategoriesList({ categories }: { categories: Category[] }) {
               </TableCell>
               <TableCell className="text-right">
                 <div className="flex justify-end gap-2">
+                  <CategoryProductsOrderDialog
+                    categoryId={category.id}
+                    categoryTitle={category.title}
+                  />
                   <CategoryForm
                     categoryId={category.id}
                     initialData={{ title: category.title, parentId: category.parentId ?? null }}

@@ -12,6 +12,7 @@ import { Banner } from '@/components/Banner';
 import { CategoriesNav } from '@/components/CategoriesNav';
 import { Button } from '@/components/ui/button';
 import { getServerI18n } from '@/lib/i18n/server';
+import { ProductGallery } from '@/components/ProductGallery';
 
 export const dynamic = 'force-dynamic';
 
@@ -26,6 +27,7 @@ export default async function ProductPage({
     where: eq(products.slug, slug),
     with: {
       category: true,
+      images: true,
     },
   });
 
@@ -51,14 +53,19 @@ export default async function ProductPage({
           </Link>
         )}
         <div className="grid gap-8 md:grid-cols-2">
-          <div className="relative aspect-square w-full overflow-hidden rounded-lg">
-            <Image
-              src={product.imagePath}
-              alt={product.title}
-              fill
-              className="object-contain"
-            />
-          </div>
+          <ProductGallery
+            images={
+              product.images && product.images.length > 0
+                ? product.images.map((i) => i.imagePath)
+                : [product.imagePath]
+            }
+            initialIndex={
+              product.images && product.images.length > 0
+                ? Math.max(0, product.images.findIndex((i) => i.isThumbnail))
+                : 0
+            }
+            alt={product.title}
+          />
           <div>
             <h1 className="mb-4 text-4xl font-bold">{product.title}</h1>
             <p className="mb-4 text-2xl font-semibold">{formatPrice(product.priceCents)}</p>

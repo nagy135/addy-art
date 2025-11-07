@@ -22,11 +22,87 @@ function ensureParentIdOnCategories(db: Database.Database): void {
   }
 }
 
+function tableExists(db: Database.Database, table: string): boolean {
+  const row = db
+    .prepare("SELECT name FROM sqlite_master WHERE type='table' AND name = ?;")
+    .get(table) as { name?: string } | undefined;
+  return !!row && row.name === table;
+}
+
+function ensureProductImagesTableAndBackfill(db: Database.Database): void {
+  if (!tableExists(db, 'product_images')) {
+    db.exec(`
+      CREATE TABLE product_images (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        product_id INTEGER NOT NULL,
+        image_path TEXT NOT NULL,
+        is_thumbnail INTEGER NOT NULL DEFAULT 0,
+        created_at INTEGER NOT NULL,
+        FOREIGN KEY(product_id) REFERENCES products(id) ON DELETE CASCADE
+      );
+      CREATE INDEX idx_product_images_product_id ON product_images(product_id);
+      CREATE INDEX idx_product_images_thumbnail ON product_images(product_id, is_thumbnail);
+    `);
+  }
+
+  // Backfill: ensure each product has at least one image row using products.image_path
+  const productsStmt = db.prepare('SELECT id, image_path FROM products;');
+  const imagesCountStmt = db.prepare(
+    'SELECT COUNT(1) as cnt FROM product_images WHERE product_id = ?;'
+  );
+  const insertImageStmt = db.prepare(
+    'INSERT INTO product_images (product_id, image_path, is_thumbnail, created_at) VALUES (?, ?, ?, ?);'
+  );
+
+  const productsRows = productsStmt.all() as Array<{ id: number; image_path: string }>;
+  const now = Date.now();
+  const backfill = db.transaction(() => {
+    for (const row of productsRows) {
+      const countRow = imagesCountStmt.get(row.id) as { cnt: number } | undefined;
+      const hasImages = !!countRow && Number(countRow.cnt) > 0;
+      if (!hasImages && row.image_path) {
+        insertImageStmt.run(row.id, row.image_path, 1, now);
+      }
+    }
+  });
+  backfill();
+}
+
+function ensureSortOrderOnProducts(db: Database.Database): void {
+  if (!columnExists(db, 'products', 'sort_order')) {
+    db.exec(`ALTER TABLE products ADD COLUMN sort_order INTEGER NOT NULL DEFAULT 0;`);
+  }
+
+  // Backfill: for each category, set sort_order to position when ordering by created_at DESC
+  const categoryIdsStmt = db.prepare('SELECT id FROM categories;');
+  const productsByCategoryStmt = db.prepare(
+    'SELECT id FROM products WHERE category_id = ? ORDER BY created_at DESC;'
+  );
+  const updateSortOrderStmt = db.prepare(
+    'UPDATE products SET sort_order = ? WHERE id = ?;'
+  );
+
+  const categoryRows = categoryIdsStmt.all() as Array<{ id: number }>;
+  const backfill = db.transaction(() => {
+    for (const { id: categoryId } of categoryRows) {
+      const productRows = productsByCategoryStmt.all(categoryId) as Array<{ id: number }>;
+      let position = 1;
+      for (const { id: productId } of productRows) {
+        updateSortOrderStmt.run(position, productId);
+        position += 1;
+      }
+    }
+  });
+  backfill();
+}
+
 function main(): void {
   const db = new Database(dbPath);
   try {
     db.exec('PRAGMA foreign_keys = ON;');
     ensureParentIdOnCategories(db);
+    ensureProductImagesTableAndBackfill(db);
+    ensureSortOrderOnProducts(db);
     // Add future migration steps here
     console.log('Migration completed.');
   } finally {

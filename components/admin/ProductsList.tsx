@@ -23,6 +23,7 @@ type Product = {
   descriptionMd: string;
   priceCents: number;
   imagePath: string;
+  images?: { id: number; imagePath: string; isThumbnail: boolean }[];
   category: {
     id: number;
     title: string;
@@ -88,7 +89,10 @@ export function ProductsList({
               <TableCell>
                 <div className="relative h-16 w-16">
                   <Image
-                    src={product.imagePath}
+                    src={
+                      (product.images && product.images.find((i) => i.isThumbnail)?.imagePath) ||
+                      product.imagePath
+                    }
                     alt={product.title}
                     fill
                     className="object-cover rounded"
@@ -107,7 +111,9 @@ export function ProductsList({
                       descriptionMd: product.descriptionMd,
                       priceCents: product.priceCents,
                       categoryId: product.category.id,
-                      imagePath: product.imagePath,
+                      images: product.images?.map((i) => i.imagePath) || [product.imagePath],
+                      thumbnailIndex:
+                        product.images?.findIndex((i) => i.isThumbnail) ?? 0,
                     }}
                     categories={categories}
                   />

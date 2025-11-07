@@ -57,7 +57,8 @@ export default async function CategoryPage({
     where: productCategoryIds.length === 1
       ? eq(products.categoryId, productCategoryIds[0])
       : or(...productCategoryIds.map((id) => eq(products.categoryId, id))),
-    orderBy: (products, { desc }) => [desc(products.createdAt)],
+    with: { images: true },
+    orderBy: (products, { asc, desc }) => [asc(products.sortOrder), desc(products.createdAt)],
   });
 
   return (

@@ -64,6 +64,17 @@ export const products = sqliteTable('products', {
   categoryId: integer('category_id')
     .notNull()
     .references(() => categories.id, { onDelete: 'cascade' }),
+  sortOrder: integer('sort_order').notNull().default(1),
+  createdAt: integer('created_at', { mode: 'timestamp_ms' }).notNull().$defaultFn(() => new Date()),
+});
+
+export const productImages = sqliteTable('product_images', {
+  id: integer('id').primaryKey({ autoIncrement: true }),
+  productId: integer('product_id')
+    .notNull()
+    .references(() => products.id, { onDelete: 'cascade' }),
+  imagePath: text('image_path').notNull(),
+  isThumbnail: integer('is_thumbnail', { mode: 'boolean' }).notNull().default(false),
   createdAt: integer('created_at', { mode: 'timestamp_ms' }).notNull().$defaultFn(() => new Date()),
 });
 
@@ -104,6 +115,7 @@ export const productsRelations = relations(products, ({ one, many }) => ({
     fields: [products.categoryId],
     references: [categories.id],
   }),
+  images: many(productImages),
   orders: many(orders),
 }));
 
@@ -117,6 +129,13 @@ export const postsRelations = relations(posts, ({ one }) => ({
 export const ordersRelations = relations(orders, ({ one }) => ({
   product: one(products, {
     fields: [orders.productId],
+    references: [products.id],
+  }),
+}));
+
+export const productImagesRelations = relations(productImages, ({ one }) => ({
+  product: one(products, {
+    fields: [productImages.productId],
     references: [products.id],
   }),
 }));

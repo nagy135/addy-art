@@ -1,18 +1,24 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { auth } from '@/app/api/auth/[...nextauth]/route';
 import { db } from '@/db';
-import { products } from '@/db/schema';
+import { products, productImages } from '@/db/schema';
 import { eq } from 'drizzle-orm';
 import { z } from 'zod';
 import { generateSlug } from '@/lib/generate-slug';
 
-const productSchema = z.object({
-  title: z.string().min(1),
-  descriptionMd: z.string().min(1),
-  priceCents: z.number().min(1),
-  categoryId: z.number().min(1),
-  imagePath: z.string().min(1),
-});
+const productSchema = z
+  .object({
+    title: z.string().min(1),
+    descriptionMd: z.string().min(1),
+    priceCents: z.number().min(1),
+    categoryId: z.number().min(1),
+    images: z.array(z.string().min(1)).min(1),
+    thumbnailIndex: z.number().int().min(0),
+  })
+  .refine((data) => data.thumbnailIndex < data.images.length, {
+    message: 'thumbnailIndex out of range',
+    path: ['thumbnailIndex'],
+  });
 
 export async function PUT(
   request: NextRequest,
@@ -28,6 +34,22 @@ export async function PUT(
     const body = await request.json();
     const validated = productSchema.parse(body);
 
+    const thumbnailPath = validated.images[validated.thumbnailIndex];
+
+    // Determine sort order behavior when category changes
+    const existing = await db.query.products.findFirst({
+      where: (products, { eq }) => eq(products.id, parseInt(id)),
+    });
+
+    let sortOrderToSet: number | null = existing?.sortOrder ?? null;
+    if (existing && existing.categoryId !== validated.categoryId) {
+      const lastInNewCategory = await db.query.products.findFirst({
+        where: (products, { eq }) => eq(products.categoryId, validated.categoryId),
+        orderBy: (products, { desc }) => [desc(products.sortOrder)],
+      });
+      sortOrderToSet = (lastInNewCategory?.sortOrder ?? 0) + 1;
+    }
+
     await db
       .update(products)
       .set({
@@ -36,9 +58,20 @@ export async function PUT(
         descriptionMd: validated.descriptionMd,
         priceCents: validated.priceCents,
         categoryId: validated.categoryId,
-        imagePath: validated.imagePath,
+        imagePath: thumbnailPath,
+        sortOrder: sortOrderToSet ?? 0,
       })
       .where(eq(products.id, parseInt(id)));
+
+    // Replace product images
+    await db.delete(productImages).where(eq(productImages.productId, parseInt(id)));
+    await db.insert(productImages).values(
+      validated.images.map((path, index) => ({
+        productId: parseInt(id),
+        imagePath: path,
+        isThumbnail: index === validated.thumbnailIndex,
+      }))
+    );
 
     return NextResponse.json({ success: true });
   } catch (error) {
