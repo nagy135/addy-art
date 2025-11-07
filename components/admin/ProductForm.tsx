@@ -27,6 +27,7 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { useI18n } from '@/components/I18nProvider';
+import { ImageCropper } from './ImageCropper';
 
 function createProductSchema(t: (key: string) => string) {
   return z.object({
@@ -67,6 +68,8 @@ export function ProductForm({
   const [open, setOpen] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [uploading, setUploading] = useState(false);
+  const [cropperOpen, setCropperOpen] = useState(false);
+  const [imagePreviewSrc, setImagePreviewSrc] = useState<string>('');
   const router = useRouter();
   const {
     register,
@@ -98,10 +101,23 @@ export function ProductForm({
     }
   }, [open, initialData, reset]);
 
-  const handleFileUpload = async (file: File) => {
+  const handleFileSelect = (file: File) => {
+    const reader = new FileReader();
+    reader.onloadend = () => {
+      setImagePreviewSrc(reader.result as string);
+      setCropperOpen(true);
+    };
+    reader.readAsDataURL(file);
+  };
+
+  const handleCroppedImage = async (croppedBlob: Blob) => {
     setUploading(true);
     try {
       const formData = new FormData();
+      // Create a File object from the blob with a proper name
+      const file = new File([croppedBlob], `cropped-${Date.now()}.jpg`, {
+        type: 'image/jpeg',
+      });
       formData.append('file', file);
 
       const response = await fetch('/api/upload', {
@@ -115,6 +131,7 @@ export function ProductForm({
 
       const { path } = await response.json();
       setValue('imagePath', path);
+      setImagePreviewSrc('');
     } catch (_error) {
       alert(t('messages.uploadImageFailed'));
     } finally {
@@ -259,21 +276,41 @@ export function ProductForm({
               onChange={(e) => {
                 const file = e.target.files?.[0];
                 if (file) {
-                  handleFileUpload(file);
+                  handleFileSelect(file);
                 }
               }}
-              disabled={uploading}
+              disabled={uploading || cropperOpen}
             />
             {uploading && <p className="mt-1 text-sm text-muted-foreground">{t('forms.uploading')}</p>}
             {imagePath && (
-              <div className="mt-2 relative h-32 w-32">
-                <Image src={imagePath} alt="Preview" fill className="object-cover rounded" />
+              <div className="mt-2 flex items-start gap-4">
+                <div className="relative h-32 w-32">
+                  <Image src={imagePath} alt="Preview" fill className="object-cover rounded" />
+                </div>
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={() => {
+                    setImagePreviewSrc(imagePath);
+                    setCropperOpen(true);
+                  }}
+                  disabled={uploading || cropperOpen}
+                >
+                  Recrop Image
+                </Button>
               </div>
             )}
             {errors.imagePath && (
               <p className="mt-1 text-sm text-destructive">{errors.imagePath.message}</p>
             )}
           </div>
+          <ImageCropper
+            open={cropperOpen}
+            onOpenChange={setCropperOpen}
+            imageSrc={imagePreviewSrc}
+            onCropComplete={handleCroppedImage}
+          />
           <div>
             <Label htmlFor="descriptionMd" className="mb-2">{t('forms.descriptionMarkdown')}</Label>
             <Textarea

@@ -3,6 +3,7 @@
 import Link from 'next/link';
 import { LayoutGrid } from '@/components/ui/layout-grid';
 import { formatPrice } from '@/lib/format-price';
+import { useState, useEffect } from 'react';
 
 type Product = {
   id: number;
@@ -32,6 +33,38 @@ const ProductCard = ({ product }: { product: Product }) => {
 };
 
 export function ProductsGrid({ products }: { products: Product[] }) {
+  const [imageAspectRatios, setImageAspectRatios] = useState<Record<number, boolean>>({});
+
+  useEffect(() => {
+    const loadImageDimensions = async () => {
+      const ratios: Record<number, boolean> = {};
+      
+      await Promise.all(
+        products.map((product) => {
+          return new Promise<void>((resolve) => {
+            const img = new Image();
+            img.onload = () => {
+              // Check if image is wider than it is tall (landscape)
+              ratios[product.id] = img.width > img.height;
+              resolve();
+            };
+            img.onerror = () => {
+              // Default to false (not wide) if image fails to load
+              ratios[product.id] = false;
+              resolve();
+            };
+            img.src = product.imagePath;
+          });
+        })
+      );
+      
+      setImageAspectRatios(ratios);
+    };
+
+    if (products.length > 0) {
+      loadImageDimensions();
+    }
+  }, [products]);
 
   if (products.length === 0) {
     return (
@@ -39,10 +72,10 @@ export function ProductsGrid({ products }: { products: Product[] }) {
     );
   }
 
-  const cards = products.map((product, index) => ({
+  const cards = products.map((product) => ({
     id: product.id,
     content: <ProductCard product={product} />,
-    className: index % 5 === 0 ? 'md:col-span-2' : 'col-span-1',
+    className: imageAspectRatios[product.id] ? 'md:col-span-2' : 'col-span-1',
     thumbnail: product.imagePath,
   }));
 
