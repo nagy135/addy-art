@@ -1,13 +1,16 @@
 import { notFound } from 'next/navigation';
 import Image from 'next/image';
+import Link from 'next/link';
 import { db } from '@/db';
 import { products } from '@/db/schema';
 import { eq } from 'drizzle-orm';
 import ReactMarkdown from 'react-markdown';
+import { ArrowLeft } from 'lucide-react';
 import { formatPrice } from '@/lib/format-price';
 import { ProductOrderDialog } from '@/components/ProductOrderDialog';
 import { Banner } from '@/components/Banner';
 import { CategoriesNav } from '@/components/CategoriesNav';
+import { Button } from '@/components/ui/button';
 
 export const dynamic = 'force-dynamic';
 
@@ -35,15 +38,23 @@ export default async function ProductPage({
   return (
     <>
       <Banner />
-      <CategoriesNav categories={categories} />
+      <CategoriesNav categories={categories} activeCategorySlug={product.category?.slug} />
       <div className="container mx-auto max-w-4xl px-4 py-8">
+        {product.category && (
+          <Link href={`/category/${product.category.slug}`} className="mb-6 inline-block">
+            <Button variant="outline" size="sm">
+              <ArrowLeft className="mr-2 h-4 w-4" />
+              Späť
+            </Button>
+          </Link>
+        )}
         <div className="grid gap-8 md:grid-cols-2">
           <div className="relative aspect-square w-full overflow-hidden rounded-lg">
             <Image
               src={product.imagePath}
               alt={product.title}
               fill
-              className="object-cover"
+              className="object-contain"
             />
           </div>
           <div>
