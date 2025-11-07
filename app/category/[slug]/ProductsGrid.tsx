@@ -4,6 +4,7 @@ import Link from 'next/link';
 import { LayoutGrid } from '@/components/ui/layout-grid';
 import { formatPrice } from '@/lib/format-price';
 import { useState, useEffect } from 'react';
+import { ProductOrderDialog } from '@/components/ProductOrderDialog';
 
 type Product = {
   id: number;
@@ -19,15 +20,19 @@ const ProductCard = ({ product }: { product: Product }) => {
     <div>
       <p className="font-bold md:text-4xl text-xl text-white capitalize">{product.title}</p>
       <p className="font-normal text-base text-white mt-2">{formatPrice(product.priceCents)}</p>
-      <Link
-        href={`/products/${product.slug}`}
-        className="inline-block mt-4 px-4 py-2 bg-white text-black rounded-md hover:bg-gray-200 transition-colors"
-        onClick={(e) => {
-          e.stopPropagation();
-        }}
-      >
-        Detail produktu
-      </Link>
+      <div className="flex gap-3 items-center mt-4">
+        <Link
+          href={`/products/${product.slug}`}
+          className="inline-block px-4 py-2 bg-white text-black rounded-md hover:bg-gray-200 transition-colors"
+          onClick={(e) => {
+            e.stopPropagation();
+          }}
+        >
+          Detail produktu
+        </Link>
+
+        <ProductOrderDialog productId={product.id} productTitle={product.title} />
+      </div>
     </div>
   );
 };
@@ -38,7 +43,7 @@ export function ProductsGrid({ products }: { products: Product[] }) {
   useEffect(() => {
     const loadImageDimensions = async () => {
       const ratios: Record<number, boolean> = {};
-      
+
       await Promise.all(
         products.map((product) => {
           return new Promise<void>((resolve) => {
@@ -57,7 +62,7 @@ export function ProductsGrid({ products }: { products: Product[] }) {
           });
         })
       );
-      
+
       setImageAspectRatios(ratios);
     };
 

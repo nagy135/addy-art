@@ -66,7 +66,7 @@ const ImageComponent = ({ card, selected }: { card: Card, selected: boolean }) =
       height="500"
       width="500"
       className={cn(
-        "absolute inset-0 h-full w-full transition duration-200 object-cover object-top"
+        "absolute inset-0 h-full w-full transition duration-200", selected ? "object-contain" : "object-cover object-center"
       )}
       alt="thumbnail"
       onError={(e) => {
