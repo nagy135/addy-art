@@ -29,19 +29,41 @@ export function CategoryProductsOrderDialog({
   const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
   const [items, setItems] = useState<ProductItem[]>([]);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     if (!open) return;
     const load = async () => {
       setLoading(true);
+      setError(null);
       try {
         const res = await fetch(`/api/categories/${categoryId}/products`);
+        if (!res.ok) {
+          const errorText = await res.text();
+          let errorMessage = `Failed to load products: ${res.status} ${res.statusText}`;
+          try {
+            const errorJson = JSON.parse(errorText);
+            if (errorJson.error) {
+              errorMessage = errorJson.error;
+            }
+          } catch {
+            // If error response is not JSON, use the text
+            if (errorText) {
+              errorMessage = errorText;
+            }
+          }
+          throw new Error(errorMessage);
+        }
         const data = (await res.json()) as Array<{
           id: number;
           title: string;
           imagePath: string;
         }>;
         setItems(data);
+      } catch (error) {
+        console.error('Failed to load products:', error);
+        setError(error instanceof Error ? error.message : 'Failed to load products');
+        setItems([]);
       } finally {
         setLoading(false);
       }
@@ -91,6 +113,11 @@ export function CategoryProductsOrderDialog({
         <div className="space-y-2 max-h-[60vh] overflow-auto pr-1">
           {loading ? (
             <p className="text-muted-foreground">Loading...</p>
+          ) : error ? (
+            <div className="text-destructive">
+              <p className="font-medium">Error loading products</p>
+              <p className="text-sm">{error}</p>
+            </div>
           ) : items.length === 0 ? (
             <p className="text-muted-foreground">No products in this category.</p>
           ) : (

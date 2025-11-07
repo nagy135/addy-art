@@ -5,27 +5,41 @@ import { products } from '@/db/schema';
 import { eq } from 'drizzle-orm';
 import { z } from 'zod';
 
+export const runtime = 'nodejs';
+
 export async function GET(
   _request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
-  const { id } = await params;
-  const categoryId = parseInt(id);
+  try {
+    const { id } = await params;
+    const categoryId = parseInt(id);
 
-  const categoryProducts = await db.query.products.findMany({
-    where: (products, { eq }) => eq(products.categoryId, categoryId),
-    with: { images: true },
-    orderBy: (products, { asc, desc }) => [asc(products.sortOrder), desc(products.createdAt)],
-  });
+    if (isNaN(categoryId)) {
+      return NextResponse.json({ error: 'Invalid category ID' }, { status: 400 });
+    }
 
-  return NextResponse.json(
-    categoryProducts.map((p) => ({
-      id: p.id,
-      title: p.title,
-      sortOrder: p.sortOrder,
-      imagePath: p.images?.find((i) => i.isThumbnail)?.imagePath ?? p.imagePath,
-    }))
-  );
+    const categoryProducts = await db.query.products.findMany({
+      where: (products, { eq }) => eq(products.categoryId, categoryId),
+      with: { images: true },
+      orderBy: (products, { asc, desc }) => [asc(products.sortOrder), desc(products.createdAt)],
+    });
+
+    return NextResponse.json(
+      categoryProducts.map((p) => ({
+        id: p.id,
+        title: p.title,
+        sortOrder: p.sortOrder,
+        imagePath: p.images?.find((i) => i.isThumbnail)?.imagePath ?? p.imagePath,
+      }))
+    );
+  } catch (error) {
+    console.error('Get category products error:', error);
+    return NextResponse.json(
+      { error: 'Failed to fetch products' },
+      { status: 500 }
+    );
+  }
 }
 
 const reorderSchema = z.object({
