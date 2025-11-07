@@ -4,7 +4,7 @@ import { DEFAULT_LOCALE } from '@/lib/i18n/config';
 import { en } from '@/lib/i18n/messages/en';
 import { sk } from '@/lib/i18n/messages/sk';
 
-type Messages = typeof en;
+type Messages = typeof en | typeof sk;
 
 function resolvePath(messages: Messages, path: string): string | undefined {
   const segments = path.split('.');

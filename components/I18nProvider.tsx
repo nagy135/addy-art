@@ -3,8 +3,9 @@
 import React, { createContext, useContext, useMemo } from 'react';
 import type { Locale } from '@/lib/i18n/config';
 import { en } from '@/lib/i18n/messages/en';
+import { sk } from '@/lib/i18n/messages/sk';
 
-export type Messages = typeof en;
+export type Messages = typeof en | typeof sk;
 
 type I18nContextValue = {
   locale: Locale;
@@ -56,5 +57,6 @@ export function useI18n(): I18nContextValue {
   }
   return ctx;
 }
+
 
 
