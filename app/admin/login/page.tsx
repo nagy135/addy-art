@@ -16,18 +16,23 @@ import {
   FormLabel,
   FormMessage,
 } from '@/components/ui/form';
+import { useI18n } from '@/components/I18nProvider';
 
-const loginSchema = z.object({
-  email: z.string().email('Neplatná e-mailová adresa'),
-  password: z.string().min(1, 'Heslo je povinné'),
-});
+function createLoginSchema(t: (key: string) => string) {
+  return z.object({
+    email: z.string().email(t('admin.invalidEmail')),
+    password: z.string().min(1, t('admin.passwordRequired')),
+  });
+}
 
-type LoginForm = z.infer<typeof loginSchema>;
+type LoginForm = z.infer<ReturnType<typeof createLoginSchema>>;
 
 export default function AdminLoginPage() {
   const router = useRouter();
   const { data: session, status } = useSession();
+  const { t } = useI18n();
   const [error, setError] = useState<string | null>(null);
+  const loginSchema = createLoginSchema(t);
   const form = useForm<LoginForm>({
     resolver: zodResolver(loginSchema),
     defaultValues: {
@@ -56,10 +61,10 @@ export default function AdminLoginPage() {
 
       if (result?.error) {
         console.error('Sign in error:', result.error);
-        setError('Neplatný e-mail alebo heslo');
+        setError(t('admin.invalidCredentials'));
       } else if (result?.ok === false) {
         console.error('Sign in failed with status:', result);
-        setError('Prihlásenie zlyhalo. Skúste znova.');
+        setError(t('admin.loginFailed'));
       } else {
         // Redirect with a small delay to ensure cookie is set
         console.log('Sign in successful, redirecting to /admin');
@@ -69,7 +74,7 @@ export default function AdminLoginPage() {
       }
     } catch (err) {
       console.error('Login error:', err);
-      setError('Vyskytla sa chyba. Skúste znova.');
+      setError(t('admin.errorOccurred'));
     }
   };
 
@@ -77,9 +82,9 @@ export default function AdminLoginPage() {
     <div className="flex min-h-screen items-center justify-center ">
       <div className="w-full max-w-md space-y-8 rounded-lg  p-8 shadow-md">
         <div>
-          <h2 className="text-center text-3xl font-bold">Prihlásenie Správcu</h2>
+          <h2 className="text-center text-3xl font-bold">{t('admin.loginTitle')}</h2>
           <p className="mt-2 text-center text-sm text-gray-600">
-            Prihláste sa na správu svojho obchodu a blogu
+            {t('admin.loginSubtitle')}
           </p>
         </div>
         <Form {...form}>
@@ -94,9 +99,9 @@ export default function AdminLoginPage() {
               name="email"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>E-mail</FormLabel>
+                  <FormLabel>{t('common.email')}</FormLabel>
                   <FormControl>
-                    <Input type="email" placeholder="admin@priklad.com" {...field} />
+                    <Input type="email" placeholder="admin@example.com" {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -107,7 +112,7 @@ export default function AdminLoginPage() {
               name="password"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Heslo</FormLabel>
+                  <FormLabel>{t('admin.password')}</FormLabel>
                   <FormControl>
                     <Input type="password" {...field} />
                   </FormControl>
@@ -116,7 +121,7 @@ export default function AdminLoginPage() {
               )}
             />
             <Button type="submit" className="w-full">
-              Prihlásiť sa
+              {t('admin.loginButton')}
             </Button>
           </form>
         </Form>

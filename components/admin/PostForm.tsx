@@ -19,15 +19,18 @@ import { Textarea } from '@/components/ui/textarea';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
+import { useI18n } from '@/components/I18nProvider';
 
-const postSchema = z.object({
-  title: z.string().min(1, 'Názov je povinný'),
-  contentMd: z.string().min(1, 'Obsah je povinný'),
-  imagePath: z.string().optional(),
-  published: z.boolean(),
-});
+function createPostSchema(t: (key: string) => string) {
+  return z.object({
+    title: z.string().min(1, t('forms.titleRequired')),
+    contentMd: z.string().min(1, t('forms.contentRequired')),
+    imagePath: z.string().optional(),
+    published: z.boolean(),
+  });
+}
 
-type PostFormData = z.infer<typeof postSchema>;
+type PostFormData = z.infer<ReturnType<typeof createPostSchema>>;
 
 type PostFormProps = {
   postId?: number;
@@ -45,6 +48,8 @@ export function PostForm({
   initialData,
   authorId,
 }: PostFormProps) {
+  const { t } = useI18n();
+  const postSchema = createPostSchema(t);
   const [open, setOpen] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [uploading, setUploading] = useState(false);
@@ -96,7 +101,7 @@ export function PostForm({
       const { path } = await response.json();
       setValue('imagePath', path);
     } catch (_error) {
-      alert('Nepodarilo sa nahrať obrázok. Skúste znova.');
+      alert(t('messages.uploadImageFailed'));
     } finally {
       setUploading(false);
     }
@@ -130,7 +135,7 @@ export function PostForm({
       setOpen(false);
       router.refresh();
     } catch (_error) {
-      alert('Nepodarilo sa uložiť príspevok. Skúste znova.');
+      alert(t('messages.savePostFailed'));
     } finally {
       setSubmitting(false);
     }
@@ -154,25 +159,25 @@ export function PostForm({
   return (
     <Dialog open={open} onOpenChange={handleOpenChange}>
       <DialogTrigger asChild>
-        <Button>{postId ? 'Upraviť' : 'Pridať Príspevok'}</Button>
+        <Button>{postId ? t('forms.edit') : t('forms.addPost')}</Button>
       </DialogTrigger>
       <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle>{postId ? 'Upraviť Príspevok' : 'Pridať Príspevok'}</DialogTitle>
+          <DialogTitle>{postId ? t('forms.editPost') : t('forms.addPost')}</DialogTitle>
           <DialogDescription>
-            {postId ? 'Aktualizovať detaily príspevku' : 'Vytvorať nový blogový príspevok'}
+            {postId ? t('forms.editPostDesc') : t('forms.addPostDesc')}
           </DialogDescription>
         </DialogHeader>
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
           <div>
-            <Label htmlFor="title" className="mb-2">Názov</Label>
+            <Label htmlFor="title" className="mb-2">{t('forms.title')}</Label>
             <Input id="title" {...register('title')} />
             {errors.title && (
               <p className="mt-1 text-sm text-destructive">{errors.title.message}</p>
             )}
           </div>
           <div>
-            <Label htmlFor="image" className="mb-2">Obrázok (voliteľne)</Label>
+            <Label htmlFor="image" className="mb-2">{t('forms.imageOptional')}</Label>
             <Input
               id="image"
               type="file"
@@ -185,7 +190,7 @@ export function PostForm({
               }}
               disabled={uploading}
             />
-            {uploading && <p className="mt-1 text-sm text-muted-foreground">Nahrává sa...</p>}
+            {uploading && <p className="mt-1 text-sm text-muted-foreground">{t('forms.uploading')}</p>}
             {imagePath && (
               <div className="mt-2 relative h-32 w-32">
                 <Image src={imagePath} alt="Preview" fill className="object-cover rounded" />
@@ -196,7 +201,7 @@ export function PostForm({
             )}
           </div>
           <div>
-            <Label htmlFor="contentMd" className="mb-2">Obsah (Markdown)</Label>
+            <Label htmlFor="contentMd" className="mb-2">{t('forms.contentMarkdown')}</Label>
             <Textarea
               id="contentMd"
               rows={15}
@@ -214,14 +219,14 @@ export function PostForm({
               onChange={(e) => setValue('published', e.target.checked)}
               className="h-4 w-4"
             />
-            <Label htmlFor="published">Publikované</Label>
+            <Label htmlFor="published">{t('forms.published')}</Label>
           </div>
           <DialogFooter>
             <Button type="button" variant="outline" onClick={() => setOpen(false)}>
-              Zrušiť
+              {t('common.cancel')}
             </Button>
             <Button type="submit" disabled={submitting || uploading}>
-              {submitting ? 'Ukladá sa...' : 'Uložiť'}
+              {submitting ? t('forms.saving') : t('forms.save')}
             </Button>
           </DialogFooter>
         </form>

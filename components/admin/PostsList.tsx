@@ -13,6 +13,7 @@ import {
 } from '@/components/ui/table';
 import { Button } from '@/components/ui/button';
 import { PostForm } from './PostForm';
+import { useI18n } from '@/components/I18nProvider';
 
 type Post = {
   id: number;
@@ -32,10 +33,11 @@ export function PostsList({
   authorId: string;
 }) {
   const router = useRouter();
+  const { t } = useI18n();
   const [deleting, setDeleting] = useState<number | null>(null);
 
   const handleDelete = async (id: number) => {
-    if (!confirm('Ste si istí, že chcete odstrániť tento príspevok?')) {
+    if (!confirm(t('messages.deletePostConfirm'))) {
       return;
     }
 
@@ -51,7 +53,7 @@ export function PostsList({
 
       router.refresh();
     } catch (_error) {
-      alert('Nepodarilo sa odstrániť príspevok. Skúste znova.');
+      alert(t('messages.deletePostFailed'));
     } finally {
       setDeleting(null);
     }
@@ -62,10 +64,10 @@ export function PostsList({
       <Table>
         <TableHeader>
           <TableRow>
-            <TableHead>Názov</TableHead>
-            <TableHead>Stav</TableHead>
-            <TableHead>Vytvorené</TableHead>
-            <TableHead className="text-right">Akcie</TableHead>
+            <TableHead>{t('tables.name')}</TableHead>
+            <TableHead>{t('tables.status')}</TableHead>
+            <TableHead>{t('tables.created')}</TableHead>
+            <TableHead className="text-right">{t('tables.actions')}</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
@@ -74,9 +76,9 @@ export function PostsList({
               <TableCell className="font-medium">{post.title}</TableCell>
               <TableCell>
                 {post.publishedAt ? (
-                  <span className="text-green-600">Publikované</span>
+                  <span className="text-green-600">{t('tables.published')}</span>
                 ) : (
-                  <span className="text-gray-500">Návrh</span>
+                  <span className="text-gray-500">{t('tables.draft')}</span>
                 )}
               </TableCell>
               <TableCell>
@@ -100,7 +102,7 @@ export function PostsList({
                     onClick={() => handleDelete(post.id)}
                     disabled={deleting === post.id}
                   >
-                    {deleting === post.id ? 'Odstraňuje sa...' : 'Odstrániť'}
+                    {deleting === post.id ? t('tables.deleting') : t('tables.delete')}
                   </Button>
                 </div>
               </TableCell>
@@ -109,7 +111,7 @@ export function PostsList({
         </TableBody>
       </Table>
       {posts.length === 0 && (
-        <p className="mt-4 text-center text-muted-foreground">Zatiaľ žiadne príspevky.</p>
+        <p className="mt-4 text-center text-muted-foreground">{t('messages.noPosts')}</p>
       )}
     </div>
   );

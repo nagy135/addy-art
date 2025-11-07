@@ -2,6 +2,7 @@
 
 import { useRouter, useSearchParams } from 'next/navigation';
 import { Button } from '@/components/ui/button';
+import { useI18n } from '@/components/I18nProvider';
 
 type Category = {
   id: number;
@@ -17,6 +18,7 @@ export function SubcategorySelector({
   currentCategorySlug: string;
 }) {
   const router = useRouter();
+  const { t } = useI18n();
   const searchParams = useSearchParams();
   const selectedId = searchParams.get('subcategory');
 
@@ -42,7 +44,7 @@ export function SubcategorySelector({
         size="sm"
         onClick={() => handleSelect(null)}
       >
-        Všetko
+        {t('common.all')}
       </Button>
       {subcategories.map((subcategory) => (
         <Button

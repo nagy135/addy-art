@@ -2,11 +2,13 @@ import { db } from '@/db';
 import { PostsList } from '@/components/admin/PostsList';
 import { PostForm } from '@/components/admin/PostForm';
 import { auth } from '@/app/api/auth/[...nextauth]/route';
+import { getServerI18n } from '@/lib/i18n/server';
 
 export const dynamic = 'force-dynamic';
 
 export default async function AdminPostsPage() {
   const session = await auth();
+  const { t } = await getServerI18n();
   if (!session?.user) {
     return null;
   }
@@ -18,7 +20,7 @@ export default async function AdminPostsPage() {
   return (
     <div className="container mx-auto px-4 py-8">
       <div className="mb-8 flex items-center justify-between">
-        <h1 className="text-4xl font-bold">Posts</h1>
+        <h1 className="text-4xl font-bold">{t('admin.dashboardPosts')}</h1>
         <PostForm authorId={session.user.id} />
       </div>
       <PostsList posts={allPosts} authorId={session.user.id} />

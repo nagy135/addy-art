@@ -6,10 +6,12 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Banner } from '@/components/Banner';
 import { CategoriesNav } from '@/components/CategoriesNav';
 import ReactMarkdown from 'react-markdown';
+import { getServerI18n } from '@/lib/i18n/server';
 
 export const dynamic = 'force-dynamic';
 
 export default async function Home() {
+  const { t } = await getServerI18n();
   const publishedPosts = await db.query.posts.findMany({
     where: (posts, { isNotNull }) => isNotNull(posts.publishedAt),
     orderBy: (posts, { desc }) => [desc(posts.publishedAt!)],
@@ -25,7 +27,7 @@ export default async function Home() {
       <Banner />
       <CategoriesNav categories={categories} />
       <div className="container mx-auto px-4 py-8">
-        <h2 className="mb-6 text-3xl font-bold">Blog</h2>
+        <h2 className="mb-6 text-3xl font-bold">{t('common.blog')}</h2>
         <div className="flex flex-col gap-6">
           {publishedPosts.map((post) => (
             <Link key={post.id} href={`/blog/${post.slug}`}>
@@ -81,7 +83,7 @@ export default async function Home() {
           ))}
         </div>
         {publishedPosts.length === 0 && (
-          <p className="text-center text-muted-foreground">No blog posts yet.</p>
+          <p className="text-center text-muted-foreground">{t('common.noPosts')}</p>
         )}
       </div>
     </>

@@ -7,11 +7,14 @@ import { useSession } from 'next-auth/react';
 import Link from 'next/link';
 import { Moon, Sun, LogIn, Settings } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { useI18n } from '@/components/I18nProvider';
+import { LanguageSwitcher } from '@/components/LanguageSwitcher';
 
 export function Banner() {
   const { theme, setTheme } = useTheme();
   const { data: session } = useSession();
   const [mounted, setMounted] = useState(false);
+  const { t } = useI18n();
 
   // Avoid hydration mismatch
   useEffect(() => {
@@ -36,7 +39,7 @@ export function Banner() {
             variant="ghost"
             size="icon"
             onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
-            aria-label="Prepnúť tému"
+            aria-label={t('common.toggleTheme')}
             className="cursor-pointer bg-white/90 hover:bg-white text-gray-900 dark:bg-gray-800/90 dark:hover:bg-gray-800 dark:text-white shadow-md"
           >
             {theme === 'dark' ? (
@@ -49,13 +52,14 @@ export function Banner() {
           <Button
             variant="ghost"
             size="icon"
-            aria-label="Prepnúť tému"
+            aria-label={t('common.toggleTheme')}
             disabled
             className="cursor-pointer bg-white/90 text-gray-900 dark:bg-gray-800/90 dark:text-white shadow-md"
           >
             <Moon className="h-4 w-4" />
           </Button>
         )}
+        <LanguageSwitcher />
 
         {/* Admin Login Button */}
         {!session && (

@@ -8,6 +8,8 @@ import { useTheme } from 'next-themes';
 import { signOut, useSession } from 'next-auth/react';
 import { ArrowLeft, Globe, LogOut, LogIn, Moon, Sun } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { useI18n } from '@/components/I18nProvider';
+import { LanguageSwitcher } from '@/components/LanguageSwitcher';
 
 export function AdminBanner() {
   const pathname = usePathname();
@@ -16,6 +18,7 @@ export function AdminBanner() {
   const { theme, setTheme } = useTheme();
   const { data: session, status } = useSession();
   const [mounted, setMounted] = useState(false);
+  const { t } = useI18n();
   
   // Avoid hydration mismatch
   useEffect(() => {
@@ -40,7 +43,7 @@ export function AdminBanner() {
       />
       <div className="absolute inset-0 flex items-center justify-center bg-black/30">
         <h1 className="text-4xl font-bold text-white drop-shadow-lg md:text-5xl">
-          Admin
+          {t('common.admin')}
         </h1>
       </div>
       <div className="absolute left-4 top-4 flex gap-2">
@@ -48,7 +51,7 @@ export function AdminBanner() {
           <Link href="/admin">
             <Button variant="outline" size="sm" className="bg-white/90 hover:bg-white dark:bg-gray-800/90 dark:hover:bg-gray-800 dark:text-white shadow-md">
               <ArrowLeft className="mr-2 h-4 w-4" />
-              Späť na Správcu
+              {t('common.backToAdmin')}
             </Button>
           </Link>
         )}
@@ -65,7 +68,7 @@ export function AdminBanner() {
             variant="ghost"
             size="icon"
             onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
-            aria-label="Prepnúť tému"
+            aria-label={t('common.toggleTheme')}
             className="bg-white/90 hover:bg-white text-gray-900 dark:bg-gray-800/90 dark:hover:bg-gray-800 dark:text-white shadow-md"
           >
             {theme === 'dark' ? (
@@ -78,13 +81,14 @@ export function AdminBanner() {
           <Button
             variant="ghost"
             size="icon"
-            aria-label="Prepnúť tému"
+            aria-label={t('common.toggleTheme')}
             disabled
             className="bg-white/90 text-gray-900 dark:bg-gray-800/90 dark:text-white shadow-md"
           >
             <Moon className="h-5 w-5" />
           </Button>
         )}
+        <LanguageSwitcher />
         {/* Show logout button only when logged in, login button when not logged in */}
         {status !== 'loading' && session?.user?.role === 'admin' && (
           <Button
@@ -94,7 +98,7 @@ export function AdminBanner() {
             className="gap-2 bg-white/90 hover:bg-white dark:bg-gray-800/90 dark:hover:bg-gray-800 dark:text-white shadow-md"
           >
             <LogOut className="h-4 w-4" />
-            Odhlásiť sa
+            {t('common.logout')}
           </Button>
         )}
         {status !== 'loading' && !session && !isLoginPage && (
@@ -105,7 +109,7 @@ export function AdminBanner() {
               className="gap-2 bg-white/90 hover:bg-white dark:bg-gray-800/90 dark:hover:bg-gray-800 dark:text-white shadow-md"
             >
               <LogIn className="h-4 w-4" />
-              Prihlásenie
+              {t('common.login')}
             </Button>
           </Link>
         )}

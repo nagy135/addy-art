@@ -12,6 +12,7 @@ import {
 } from '@/components/ui/table';
 import { Button } from '@/components/ui/button';
 import { CategoryForm } from './CategoryForm';
+import { useI18n } from '@/components/I18nProvider';
 
 type Category = {
   id: number;
@@ -22,10 +23,11 @@ type Category = {
 
 export function CategoriesList({ categories }: { categories: Category[] }) {
   const router = useRouter();
+  const { t } = useI18n();
   const [deleting, setDeleting] = useState<number | null>(null);
 
   const handleDelete = async (id: number) => {
-    if (!confirm('Ste si istí, že chcete odstrániť túto kategóriu?')) {
+    if (!confirm(t('messages.deleteCategoryConfirm'))) {
       return;
     }
 
@@ -41,7 +43,7 @@ export function CategoriesList({ categories }: { categories: Category[] }) {
 
       router.refresh();
     } catch (_error) {
-      alert('Nepodarilo sa odstrániť kategóriu. Skúste znova.');
+      alert(t('messages.deleteCategoryFailed'));
     } finally {
       setDeleting(null);
     }
@@ -52,10 +54,10 @@ export function CategoriesList({ categories }: { categories: Category[] }) {
       <Table>
         <TableHeader>
           <TableRow>
-            <TableHead>Názov</TableHead>
-            <TableHead>Slug</TableHead>
-            <TableHead>Materská</TableHead>
-            <TableHead className="text-right">Akcie</TableHead>
+            <TableHead>{t('tables.name')}</TableHead>
+            <TableHead>{t('tables.slug')}</TableHead>
+            <TableHead>{t('tables.parent')}</TableHead>
+            <TableHead className="text-right">{t('tables.actions')}</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
@@ -79,7 +81,7 @@ export function CategoriesList({ categories }: { categories: Category[] }) {
                     onClick={() => handleDelete(category.id)}
                     disabled={deleting === category.id}
                   >
-                    {deleting === category.id ? 'Odstraňuje sa...' : 'Odstrániť'}
+                    {deleting === category.id ? t('tables.deleting') : t('tables.delete')}
                   </Button>
                 </div>
               </TableCell>
@@ -88,7 +90,7 @@ export function CategoriesList({ categories }: { categories: Category[] }) {
         </TableBody>
       </Table>
       {categories.length === 0 && (
-        <p className="mt-4 text-center text-muted-foreground">Zatiaľ žiadne kategórie.</p>
+        <p className="mt-4 text-center text-muted-foreground">{t('messages.noCategories')}</p>
       )}
     </div>
   );

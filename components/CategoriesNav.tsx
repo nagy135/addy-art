@@ -12,6 +12,7 @@ import {
   SheetTitle,
   SheetTrigger,
 } from '@/components/ui/sheet';
+import { useI18n } from '@/components/I18nProvider';
 
 type Category = {
   id: number;
@@ -35,6 +36,7 @@ export function CategoriesNav({
 }) {
   const [open, setOpen] = useState(false);
   const pathname = usePathname();
+  const { t } = useI18n();
 
   // Filter to only root categories (no parentId)
   const rootCategories = categories.filter((cat) => !cat.parentId);
@@ -73,7 +75,7 @@ export function CategoriesNav({
                 variant={isActive ? 'default' : 'outline'}
               >
                 <Link href={category.id === 0 ? '/' : `/category/${category.slug}`}>
-                  <span className="capitalize">{category.title}</span>
+                  <span className="capitalize">{category.id === 0 ? t('common.home') : category.title}</span>
                 </Link>
               </Button>
             );
@@ -86,12 +88,12 @@ export function CategoriesNav({
             <SheetTrigger asChild>
               <Button variant="outline" size="sm">
                 <Menu className="h-5 w-5" />
-                <span className="ml-2">Kategórie</span>
+                <span className="ml-2">{t('common.categories')}</span>
               </Button>
             </SheetTrigger>
             <SheetContent side="left">
               <SheetHeader>
-                <SheetTitle>Kategórie</SheetTitle>
+                <SheetTitle>{t('common.categories')}</SheetTitle>
               </SheetHeader>
               <div className="mt-6 flex flex-col gap-2 px-2">
                 {allCategories.map((category) => {
@@ -105,7 +107,7 @@ export function CategoriesNav({
                       onClick={() => setOpen(false)}
                     >
                       <Link href={category.id === 0 ? '/' : `/category/${category.slug}`}>
-                        {category.title}
+                        {category.id === 0 ? t('common.home') : category.title}
                       </Link>
                     </Button>
                   );

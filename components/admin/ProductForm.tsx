@@ -26,16 +26,19 @@ import { Textarea } from '@/components/ui/textarea';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
+import { useI18n } from '@/components/I18nProvider';
 
-const productSchema = z.object({
-  title: z.string().min(1, 'Názov je povinný'),
-  descriptionMd: z.string().min(1, 'Popis je povinný'),
-  priceCents: z.number().min(1, 'Cena musí byť minimálne €0,01'),
-  categoryId: z.number().min(1, 'Kategória je povinná'),
-  imagePath: z.string().min(1, 'Obrázok je povinný'),
-});
+function createProductSchema(t: (key: string) => string) {
+  return z.object({
+    title: z.string().min(1, t('forms.titleRequired')),
+    descriptionMd: z.string().min(1, t('forms.descriptionRequired')),
+    priceCents: z.number().min(1, t('forms.priceRequired')),
+    categoryId: z.number().min(1, t('forms.categoryRequired')),
+    imagePath: z.string().min(1, t('forms.imageRequired')),
+  });
+}
 
-type ProductFormData = z.infer<typeof productSchema>;
+type ProductFormData = z.infer<ReturnType<typeof createProductSchema>>;
 
 type Category = {
   id: number;
@@ -59,6 +62,8 @@ export function ProductForm({
   };
   categories: Category[];
 }) {
+  const { t } = useI18n();
+  const productSchema = createProductSchema(t);
   const [open, setOpen] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [uploading, setUploading] = useState(false);
@@ -111,7 +116,7 @@ export function ProductForm({
       const { path } = await response.json();
       setValue('imagePath', path);
     } catch (_error) {
-      alert('Nepodarilo sa nahrať obrázok. Skúste znova.');
+      alert(t('messages.uploadImageFailed'));
     } finally {
       setUploading(false);
     }
@@ -143,7 +148,7 @@ export function ProductForm({
       setOpen(false);
       router.refresh();
     } catch (_error) {
-      alert('Nepodarilo sa uložiť produkt. Skúste znova.');
+      alert(t('messages.saveProductFailed'));
     } finally {
       setSubmitting(false);
     }
@@ -163,31 +168,31 @@ export function ProductForm({
   return (
     <Dialog open={open} onOpenChange={handleOpenChange}>
       <DialogTrigger asChild>
-        <Button>{productId ? 'Upraviť' : 'Pridať Produkt'}</Button>
+        <Button>{productId ? t('forms.edit') : t('forms.addProduct')}</Button>
       </DialogTrigger>
       <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle>{productId ? 'Upraviť Produkt' : 'Pridať Produkt'}</DialogTitle>
+          <DialogTitle>{productId ? t('forms.editProduct') : t('forms.addProduct')}</DialogTitle>
           <DialogDescription>
-            {productId ? 'Aktualizovať detaily produktu' : 'Vytvorať nový produkt'}
+            {productId ? t('forms.editProductDesc') : t('forms.addProductDesc')}
           </DialogDescription>
         </DialogHeader>
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
           <div>
-            <Label htmlFor="title" className="mb-2">Názov</Label>
+            <Label htmlFor="title" className="mb-2">{t('forms.title')}</Label>
             <Input id="title" {...register('title')} />
             {errors.title && (
               <p className="mt-1 text-sm text-destructive">{errors.title.message}</p>
             )}
           </div>
           <div>
-            <Label htmlFor="categoryId" className="mb-2">Kategória</Label>
+            <Label htmlFor="categoryId" className="mb-2">{t('forms.category')}</Label>
             <Select
               onValueChange={(value) => setValue('categoryId', parseInt(value))}
               value={categoryId?.toString()}
             >
               <SelectTrigger>
-                <SelectValue placeholder="Vyberte kategóriu" />
+                <SelectValue placeholder={t('forms.category')} />
               </SelectTrigger>
               <SelectContent>
                 {(() => {
@@ -225,7 +230,7 @@ export function ProductForm({
             )}
           </div>
           <div>
-            <Label htmlFor="priceEuros" className="mb-2">Cena (€)</Label>
+            <Label htmlFor="priceEuros" className="mb-2">{t('forms.price')}</Label>
             <Input
               id="priceEuros"
               type="number"
@@ -246,7 +251,7 @@ export function ProductForm({
             )}
           </div>
           <div>
-            <Label htmlFor="image" className="mb-2">Obrázok</Label>
+            <Label htmlFor="image" className="mb-2">{t('forms.image')}</Label>
             <Input
               id="image"
               type="file"
@@ -259,7 +264,7 @@ export function ProductForm({
               }}
               disabled={uploading}
             />
-            {uploading && <p className="mt-1 text-sm text-muted-foreground">Nahrává sa...</p>}
+            {uploading && <p className="mt-1 text-sm text-muted-foreground">{t('forms.uploading')}</p>}
             {imagePath && (
               <div className="mt-2 relative h-32 w-32">
                 <Image src={imagePath} alt="Preview" fill className="object-cover rounded" />
@@ -270,7 +275,7 @@ export function ProductForm({
             )}
           </div>
           <div>
-            <Label htmlFor="descriptionMd" className="mb-2">Popis (Markdown)</Label>
+            <Label htmlFor="descriptionMd" className="mb-2">{t('forms.descriptionMarkdown')}</Label>
             <Textarea
               id="descriptionMd"
               rows={10}
@@ -282,10 +287,10 @@ export function ProductForm({
           </div>
           <DialogFooter>
             <Button type="button" variant="outline" onClick={() => setOpen(false)}>
-              Zrušiť
+              {t('common.cancel')}
             </Button>
             <Button type="submit" disabled={submitting || uploading}>
-              {submitting ? 'Ukladá sa...' : 'Uložiť'}
+              {submitting ? t('forms.saving') : t('forms.save')}
             </Button>
           </DialogFooter>
         </form>

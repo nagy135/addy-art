@@ -16,14 +16,17 @@ import { Label } from '@/components/ui/label';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
+import { useI18n } from '@/components/I18nProvider';
 
-const orderSchema = z.object({
-  email: z.string().email().optional(),
-  phone: z.string().optional(),
-}).refine((data) => data.email || data.phone, {
-  message: 'Je potrebné e-mail alebo telefón',
-  path: ['email'],
-});
+const orderSchema = z
+  .object({
+    email: z.string().email().optional(),
+    phone: z.string().optional(),
+  })
+  .refine((data) => data.email || data.phone, {
+    message: 'order.validation',
+    path: ['email'],
+  });
 
 type OrderForm = z.infer<typeof orderSchema>;
 
@@ -36,6 +39,7 @@ export function ProductOrderDialog({
 }) {
   const [open, setOpen] = useState(false);
   const [submitting, setSubmitting] = useState(false);
+  const { t } = useI18n();
   const {
     register,
     handleSubmit,
@@ -59,14 +63,14 @@ export function ProductOrderDialog({
       });
 
       if (!response.ok) {
-        throw new Error('Failed to submit order');
+        throw new Error('order.fail');
       }
 
       reset();
       setOpen(false);
-      alert('Objednávka bola úspešne odoslaná!');
+      alert(t('common.orderSuccess'));
     } catch (_error) {
-      alert('Nepodarilo sa odoslať objednávku. Skúste znova.');
+      alert(t('common.orderFail'));
     } finally {
       setSubmitting(false);
     }
@@ -75,34 +79,34 @@ export function ProductOrderDialog({
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button size="lg">Objednať Teraz</Button>
+        <Button size="lg">{t('common.orderNow')}</Button>
       </DialogTrigger>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>Zložiť Objednávku</DialogTitle>
+          <DialogTitle>{t('common.placeOrder')}</DialogTitle>
           <DialogDescription>
-            Zadajte svoju e-mailovú adresu alebo telefónne číslo pre objednávku {productTitle}
+            {t('common.orderDescription', { productTitle })}
           </DialogDescription>
         </DialogHeader>
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
           <div>
-            <Label htmlFor="email" className="mb-2">E-mail</Label>
+            <Label htmlFor="email" className="mb-2">{t('common.email')}</Label>
             <Input
               id="email"
               type="email"
-              placeholder="vasa@email.com"
+              placeholder="your@email.com"
               {...register('email')}
             />
             {errors.email && (
-              <p className="mt-1 text-sm text-destructive">{errors.email.message}</p>
+              <p className="mt-1 text-sm text-destructive">{errors.email.message === 'order.validation' ? t('common.orderValidation') : errors.email.message}</p>
             )}
           </div>
           <div>
-            <Label htmlFor="phone" className="mb-2">Telefón</Label>
+            <Label htmlFor="phone" className="mb-2">{t('common.phone')}</Label>
             <Input
               id="phone"
               type="tel"
-              placeholder="+421 (910) 000-000"
+              placeholder="+1 (555) 000-0000"
               {...register('phone')}
             />
             {errors.phone && (
@@ -111,10 +115,10 @@ export function ProductOrderDialog({
           </div>
           <DialogFooter>
             <Button type="button" variant="outline" onClick={() => setOpen(false)}>
-              Zrušiť
+              {t('common.cancel')}
             </Button>
             <Button type="submit" disabled={submitting}>
-              {submitting ? 'Odosielá sa...' : 'Odoslať Objednávku'}
+              {submitting ? t('common.submitting') : t('common.submitOrder')}
             </Button>
           </DialogFooter>
         </form>

@@ -11,6 +11,7 @@ import { ProductOrderDialog } from '@/components/ProductOrderDialog';
 import { Banner } from '@/components/Banner';
 import { CategoriesNav } from '@/components/CategoriesNav';
 import { Button } from '@/components/ui/button';
+import { getServerI18n } from '@/lib/i18n/server';
 
 export const dynamic = 'force-dynamic';
 
@@ -20,6 +21,7 @@ export default async function ProductPage({
   params: Promise<{ slug: string }>;
 }) {
   const { slug } = await params;
+  const { t } = await getServerI18n();
   const product = await db.query.products.findFirst({
     where: eq(products.slug, slug),
     with: {
@@ -44,7 +46,7 @@ export default async function ProductPage({
           <Link href={`/category/${product.category.slug}`} className="mb-6 inline-block">
             <Button variant="outline" size="sm">
               <ArrowLeft className="mr-2 h-4 w-4" />
-              Späť
+              {t('common.back')}
             </Button>
           </Link>
         )}

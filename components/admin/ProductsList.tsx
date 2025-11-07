@@ -14,6 +14,7 @@ import {
 import { Button } from '@/components/ui/button';
 import { ProductForm } from './ProductForm';
 import { formatPrice } from '@/lib/format-price';
+import { useI18n } from '@/components/I18nProvider';
 
 type Product = {
   id: number;
@@ -43,10 +44,11 @@ export function ProductsList({
   categories: Category[];
 }) {
   const router = useRouter();
+  const { t } = useI18n();
   const [deleting, setDeleting] = useState<number | null>(null);
 
   const handleDelete = async (id: number) => {
-    if (!confirm('Ste si istí, že chcete odstrániť tento produkt?')) {
+    if (!confirm(t('messages.deleteProductConfirm'))) {
       return;
     }
 
@@ -62,7 +64,7 @@ export function ProductsList({
 
       router.refresh();
     } catch (_error) {
-      alert('Nepodarilo sa odstrániť produkt. Skúste znova.');
+      alert(t('messages.deleteProductFailed'));
     } finally {
       setDeleting(null);
     }
@@ -73,11 +75,11 @@ export function ProductsList({
       <Table>
         <TableHeader>
           <TableRow>
-            <TableHead>Obrázok</TableHead>
-            <TableHead>Názov</TableHead>
-            <TableHead>Kategória</TableHead>
-            <TableHead>Cena</TableHead>
-            <TableHead className="text-right">Akcie</TableHead>
+            <TableHead>{t('tables.image')}</TableHead>
+            <TableHead>{t('tables.name')}</TableHead>
+            <TableHead>{t('forms.category')}</TableHead>
+            <TableHead>{t('tables.price')}</TableHead>
+            <TableHead className="text-right">{t('tables.actions')}</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
@@ -114,7 +116,7 @@ export function ProductsList({
                     onClick={() => handleDelete(product.id)}
                     disabled={deleting === product.id}
                   >
-                    {deleting === product.id ? 'Odstraňuje sa...' : 'Odstrániť'}
+                    {deleting === product.id ? t('tables.deleting') : t('tables.delete')}
                   </Button>
                 </div>
               </TableCell>
@@ -123,7 +125,7 @@ export function ProductsList({
         </TableBody>
       </Table>
       {products.length === 0 && (
-        <p className="mt-4 text-center text-muted-foreground">Zatiaľ žiadne produkty.</p>
+        <p className="mt-4 text-center text-muted-foreground">{t('messages.noProducts')}</p>
       )}
     </div>
   );

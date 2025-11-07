@@ -24,13 +24,16 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
+import { useI18n } from '@/components/I18nProvider';
 
-const categorySchema = z.object({
-  title: z.string().min(1, 'Názov je povinný'),
-  parentId: z.number().int().positive().optional().nullable(),
-});
+function createCategorySchema(t: (key: string) => string) {
+  return z.object({
+    title: z.string().min(1, t('forms.titleRequired')),
+    parentId: z.number().int().positive().optional().nullable(),
+  });
+}
 
-type CategoryFormData = z.infer<typeof categorySchema>;
+type CategoryFormData = z.infer<ReturnType<typeof createCategorySchema>>;
 
 type CategoryOption = {
   id: number;
@@ -47,6 +50,8 @@ export function CategoryForm({
   initialData?: { title: string; parentId?: number | null };
   allCategories?: CategoryOption[];
 }) {
+  const { t } = useI18n();
+  const categorySchema = createCategorySchema(t);
   const [open, setOpen] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const router = useRouter();
@@ -109,7 +114,7 @@ export function CategoryForm({
       setOpen(false);
       router.refresh();
     } catch (_error) {
-      alert('Nepodarilo sa uložiť kategóriu. Skúste znova.');
+      alert(t('messages.saveCategoryFailed'));
     } finally {
       setSubmitting(false);
     }
@@ -118,25 +123,25 @@ export function CategoryForm({
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button>{categoryId ? 'Upraviť' : 'Pridať Kategóriu'}</Button>
+        <Button>{categoryId ? t('forms.edit') : t('forms.addCategory')}</Button>
       </DialogTrigger>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>{categoryId ? 'Upraviť Kategóriu' : 'Pridať Kategóriu'}</DialogTitle>
+          <DialogTitle>{categoryId ? t('forms.editCategory') : t('forms.addCategory')}</DialogTitle>
           <DialogDescription>
-            {categoryId ? 'Aktualizovať detaily kategórie' : 'Vytvorať novú kategóriu produktu'}
+            {categoryId ? t('forms.editCategoryDesc') : t('forms.addCategoryDesc')}
           </DialogDescription>
         </DialogHeader>
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
           <div>
-            <Label htmlFor="title" className="mb-2">Názov</Label>
+            <Label htmlFor="title" className="mb-2">{t('forms.title')}</Label>
             <Input id="title" {...register('title')} />
             {errors.title && (
               <p className="mt-1 text-sm text-destructive">{errors.title.message}</p>
             )}
           </div>
           <div>
-            <Label htmlFor="parentId" className="mb-2">Materská Kategória (voliteľne)</Label>
+            <Label htmlFor="parentId" className="mb-2">{t('forms.parentCategory')}</Label>
             <Select
               onValueChange={(value) => {
                 if (value === 'none') {
@@ -148,10 +153,10 @@ export function CategoryForm({
               value={parentId === null || parentId === undefined ? '' : parentId.toString()}
             >
               <SelectTrigger>
-                <SelectValue placeholder="Bez materskej (koreňová kategória)" />
+                <SelectValue placeholder={t('forms.noParentPlaceholder')} />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="none">Bez materskej (koreň)</SelectItem>
+                <SelectItem value="none">{t('forms.noParent')}</SelectItem>
                 {selectableParents.map((c) => (
                   <SelectItem key={c.id} value={c.id.toString()}>
                     {`${'— '.repeat(c.depth)}${c.title}`}
@@ -160,15 +165,15 @@ export function CategoryForm({
               </SelectContent>
             </Select>
             {errors.parentId && (
-              <p className="mt-1 text-sm text-destructive">Neplatný výber materskej kategórie</p>
+              <p className="mt-1 text-sm text-destructive">{t('forms.invalidParentCategory')}</p>
             )}
           </div>
           <DialogFooter>
             <Button type="button" variant="outline" onClick={() => setOpen(false)}>
-              Zrušiť
+              {t('common.cancel')}
             </Button>
             <Button type="submit" disabled={submitting}>
-              {submitting ? 'Ukladá sa...' : 'Uložiť'}
+              {submitting ? t('forms.saving') : t('forms.save')}
             </Button>
           </DialogFooter>
         </form>
