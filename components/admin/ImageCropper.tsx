@@ -2,6 +2,7 @@
 
 import { useState, useCallback, useEffect } from 'react';
 import Cropper from 'react-easy-crop';
+import { Square } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
   Dialog,
@@ -11,13 +12,6 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
 type CropArea = {
   x: number;
   y: number;
@@ -178,22 +172,29 @@ export function ImageCropper({
             <label className="text-sm font-medium mb-2 block">
               Aspect Ratio
             </label>
-            <Select
-              value={aspectRatio}
-              onValueChange={(value) => setAspectRatio(value as AspectRatio)}
-            >
-              <SelectTrigger className="w-full">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="single">
-                  Single Column (1:1 Square)
-                </SelectItem>
-                <SelectItem value="double">
-                  Double Column (2:1 Wide)
-                </SelectItem>
-              </SelectContent>
-            </Select>
+            <div className="flex gap-2">
+              <Button
+                type="button"
+                variant={aspectRatio === 'single' ? 'default' : 'outline'}
+                onClick={() => setAspectRatio('single')}
+                className="flex-1"
+                title="Single Column (1:1 Square)"
+              >
+                <Square className="h-4 w-4" />
+              </Button>
+              <Button
+                type="button"
+                variant={aspectRatio === 'double' ? 'default' : 'outline'}
+                onClick={() => setAspectRatio('double')}
+                className="flex-1"
+                title="Double Column (2:1 Wide)"
+              >
+                <div className="flex gap-1">
+                  <Square className="h-4 w-4" />
+                  <Square className="h-4 w-4" />
+                </div>
+              </Button>
+            </div>
           </div>
           <div className="relative w-full h-[400px] bg-gray-100 rounded-lg overflow-hidden">
             <Cropper
