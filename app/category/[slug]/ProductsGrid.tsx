@@ -4,6 +4,7 @@ import Link from 'next/link';
 import { LayoutGrid } from '@/components/ui/layout-grid';
 import { formatPrice } from '@/lib/format-price';
 import { useState, useEffect } from 'react';
+import { usePathname, useSearchParams } from 'next/navigation';
 import { ProductOrderDialog } from '@/components/ProductOrderDialog';
 
 type Product = {
@@ -19,7 +20,7 @@ type Product = {
 const ProductCard = ({ product }: { product: Product }) => {
   return (
     <div>
-      <p className="font-bold md:text-4xl text-xl text-white capitalize">{product.title}</p>
+      <p className="font-bold md:text-4xl text-xl text-white">{product.title}</p>
       <p className="font-normal text-base text-white mt-2">{formatPrice(product.priceCents)}</p>
       <div className="flex gap-3 items-center mt-4">
         <Link
@@ -38,8 +39,37 @@ const ProductCard = ({ product }: { product: Product }) => {
   );
 };
 
-export function ProductsGrid({ products }: { products: Product[] }) {
+export function ProductsGrid({ products, categoryKey }: { products: Product[]; categoryKey: string }) {
   const [imageAspectRatios, setImageAspectRatios] = useState<Record<number, boolean>>({});
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
+
+  // Scroll to category title when category or subcategory changes
+  useEffect(() => {
+    // Only scroll if we're on a category page
+    if (pathname?.startsWith('/category/')) {
+      // Use requestAnimationFrame to ensure DOM is ready, then add small delay for smooth transition
+      requestAnimationFrame(() => {
+        setTimeout(() => {
+          const titleElement = document.getElementById('category-title');
+          if (titleElement) {
+            // Calculate offset for sticky navigation bar
+            const navElement = document.querySelector('nav[class*="sticky"]');
+            const navHeight = navElement ? navElement.getBoundingClientRect().height : 80;
+            const offset = navHeight + 16; // Add 16px extra padding
+
+            const elementPosition = titleElement.getBoundingClientRect().top;
+            const offsetPosition = elementPosition + window.pageYOffset - offset;
+
+            window.scrollTo({
+              top: offsetPosition,
+              behavior: 'smooth'
+            });
+          }
+        }, 150);
+      });
+    }
+  }, [pathname, searchParams]);
 
   useEffect(() => {
     const loadImageDimensions = async () => {
@@ -71,7 +101,7 @@ export function ProductsGrid({ products }: { products: Product[] }) {
     if (products.length > 0) {
       loadImageDimensions();
     }
-  }, [products]);
+  }, [products, categoryKey]);
 
   if (products.length === 0) {
     return (
@@ -89,7 +119,7 @@ export function ProductsGrid({ products }: { products: Product[] }) {
 
   return (
     <div className="w-full py-0">
-      <LayoutGrid cards={cards} />
+      <LayoutGrid key={categoryKey} cards={cards} />
     </div>
   );
 }

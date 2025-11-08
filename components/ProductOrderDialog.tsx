@@ -94,7 +94,7 @@ export function ProductOrderDialog({
             <Input
               id="email"
               type="email"
-              placeholder="your@email.com"
+              placeholder="email@email.sk"
               {...register('email')}
             />
             {errors.email && (
@@ -106,7 +106,7 @@ export function ProductOrderDialog({
             <Input
               id="phone"
               type="tel"
-              placeholder="+1 (555) 000-0000"
+              placeholder="+421 123 456 789"
               {...register('phone')}
             />
             {errors.phone && (

@@ -25,9 +25,8 @@ export function ProductGallery({ images, initialIndex = 0, alt }: ProductGallery
               key={`${src}-${idx}`}
               type="button"
               onClick={() => setSelectedIndex(idx)}
-              className={`relative h-16 w-full overflow-hidden rounded border ${
-                idx === selectedIndex ? 'border-black' : 'border-transparent'
-              }`}
+              className={`relative h-16 w-full overflow-hidden rounded border-2 ${idx === selectedIndex ? 'border-yellow-800 dark:border-white' : 'border-transparent'
+                }`}
             >
               <Image src={src} alt={`${alt} ${idx + 1}`} fill className="object-cover" />
             </button>

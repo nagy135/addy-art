@@ -10,7 +10,7 @@ export const sk = {
     home: 'Domov',
     orderNow: 'Objednať',
     placeOrder: 'Zadať objednávku',
-    orderDescription: 'Zadajte e‑mail alebo telefónne číslo pre objednávku produktu {productTitle}',
+    orderDescription: 'Zadajte e‑mail alebo telefónne číslo pre objednávku produktu: {productTitle}',
     orderValidation: 'Je potrebné e‑mail alebo telefón',
     email: 'E‑mail',
     phone: 'Telefón',

@@ -38,6 +38,7 @@ export function CategoriesNav({
   const pathname = usePathname();
   const { t } = useI18n();
 
+
   // Filter to only root categories (no parentId)
   const rootCategories = categories.filter((cat) => !cat.parentId);
 
@@ -68,13 +69,17 @@ export function CategoriesNav({
         <div className="hidden md:flex justify-center gap-4">
           {allCategories.map((category) => {
             const isActive = activeSlug === category.slug;
+            const href = category.id === 0 ? '/' : `/category/${category.slug}`;
             return (
               <Button 
                 key={category.id} 
                 asChild
                 variant={isActive ? 'default' : 'outline'}
               >
-                <Link href={category.id === 0 ? '/' : `/category/${category.slug}`}>
+                <Link 
+                  href={href}
+                  scroll={category.id === 0}
+                >
                   <span className="capitalize">{category.id === 0 ? t('common.home') : category.title}</span>
                 </Link>
               </Button>
@@ -98,6 +103,7 @@ export function CategoriesNav({
               <div className="mt-6 flex flex-col gap-2 px-2">
                 {allCategories.map((category) => {
                   const isActive = activeSlug === category.slug;
+                  const href = category.id === 0 ? '/' : `/category/${category.slug}`;
                   return (
                     <Button
                       key={category.id}
@@ -106,7 +112,10 @@ export function CategoriesNav({
                       className="justify-start"
                       onClick={() => setOpen(false)}
                     >
-                      <Link href={category.id === 0 ? '/' : `/category/${category.slug}`}>
+                      <Link 
+                        href={href}
+                        scroll={category.id === 0}
+                      >
                         {category.id === 0 ? t('common.home') : category.title}
                       </Link>
                     </Button>

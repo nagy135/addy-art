@@ -66,9 +66,11 @@ export default async function CategoryPage({
       <Banner />
       <CategoriesNav categories={allCategories} />
       <div className="container mx-auto px-4 py-4">
-        <h2 className="mb-0 text-3xl font-bold">{category.title}</h2>
+        <h2 id="category-title" className="mb-5 text-3xl font-bold">{category.title}</h2>
         <SubcategorySelector subcategories={subcategories} currentCategorySlug={slug} />
-        <ProductsGrid products={allProducts} />
+        <div id="products">
+          <ProductsGrid products={allProducts} categoryKey={`${slug}-${subcategory || 'all'}`} />
+        </div>
       </div>
     </>
   );

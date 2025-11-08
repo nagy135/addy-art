@@ -45,7 +45,7 @@
 
 :root {
   --radius: 0.65rem;
-  --background: #fef2f2; /* red-50 */
+  --background: #dbd2cc; /* red-50 */
   --foreground: oklch(0.141 0.005 285.823);
   --card: #fef2f2; /* red-50 */
   --card-foreground: oklch(0.141 0.005 285.823);
@@ -79,7 +79,7 @@
 }
 
 .dark {
-  --background: #18181b; /* zinc-900 */
+  --background: #120805; /* zinc-900 */
   --foreground: oklch(0.985 0 0);
   --card: #18181b; /* zinc-900 */
   --card-foreground: oklch(0.985 0 0);

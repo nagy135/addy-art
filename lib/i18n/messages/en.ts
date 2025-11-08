@@ -10,7 +10,7 @@ export const en = {
     home: 'Home',
     orderNow: 'Order Now',
     placeOrder: 'Place Order',
-    orderDescription: 'Enter your email or phone number to place an order for {productTitle}',
+    orderDescription: 'Enter your email or phone number to place an order for: {productTitle}',
     orderValidation: 'Either email or phone is required',
     email: 'Email',
     phone: 'Phone',

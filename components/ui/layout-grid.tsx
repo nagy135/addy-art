@@ -1,5 +1,5 @@
 "use client";
-import React, { useState } from "react";
+import React, { useRef, useState } from "react";
 import { motion } from "motion/react";
 import { cn } from "@/lib/utils";
 
@@ -13,6 +13,16 @@ type Card = {
 export const LayoutGrid = ({ cards }: { cards: Card[] }) => {
   const [selected, setSelected] = useState<Card | null>(null);
   const [lastSelected, setLastSelected] = useState<Card | null>(null);
+  const cardRefs = useRef<Map<number, HTMLDivElement>>(new Map());
+
+  const scrollCardIntoView = (cardId: number) => {
+    const el = cardRefs.current.get(cardId);
+    if (!el) return;
+    const rect = el.getBoundingClientRect();
+    const elementCenterY = rect.top + window.scrollY + rect.height / 2;
+    const targetY = Math.max(0, elementCenterY - window.innerHeight / 2);
+    window.scrollTo({ top: targetY, behavior: "smooth" });
+  };
 
   const handleClick = (card: Card) => {
     setLastSelected(selected);
@@ -29,6 +39,13 @@ export const LayoutGrid = ({ cards }: { cards: Card[] }) => {
       {cards.map((card, i) => (
         <div key={i} className={cn(card.className, "min-h-[300px]")}>
           <motion.div
+            ref={(el: HTMLDivElement | null) => {
+              if (el) {
+                cardRefs.current.set(card.id, el);
+              } else {
+                cardRefs.current.delete(card.id);
+              }
+            }}
             onClick={() => handleClick(card)}
             className={cn(
               card.className,
@@ -40,6 +57,12 @@ export const LayoutGrid = ({ cards }: { cards: Card[] }) => {
                   : "bg-gray-200 rounded-xl h-full w-full min-h-[300px]"
             )}
             layoutId={`card-${card.id}`}
+            onLayoutAnimationComplete={() => {
+              if (selected?.id === card.id) {
+                // Ensure scroll happens after the expand animation finishes
+                scrollCardIntoView(card.id);
+              }
+            }}
           >
             {selected?.id === card.id && <SelectedCard selected={selected} />}
             <ImageComponent card={card} selected={!!selected} />

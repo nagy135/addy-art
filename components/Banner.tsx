@@ -23,9 +23,9 @@ export function Banner() {
   }, []);
 
   return (
-    <div className="relative h-64 w-full overflow-hidden bg-black md:h-96">
+    <div className="relative h-64 w-full overflow-hidden bg-black md:h-[500px]">
       <Image
-        src="/logo.jpeg"
+        src="/logo-new.jpeg"
         alt="Addy Art"
         fill
         className="object-cover"
@@ -91,7 +91,8 @@ export function Banner() {
 
       <div className="absolute inset-0 flex items-end justify-center bg-black/30 pb-8">
         <h1 className="text-5xl font-bold text-white drop-shadow-lg md:text-7xl capitalize">
-          addy art
+          <span>addy</span>
+          <span>art</span>
         </h1>
       </div>
     </div>
