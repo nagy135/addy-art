@@ -94,7 +94,9 @@ export function CategoriesNav({
                   href={href}
                   scroll={category.id === 0}
                 >
-                  <span className="capitalize">{category.id === 0 ? t('common.home') : category.title}</span>
+                  <span className={category.id === -1 ? 'uppercase' : 'capitalize'}>
+                    {category.id === 0 ? t('common.home') : category.title}
+                  </span>
                 </Link>
               </Button>
             );
@@ -134,7 +136,9 @@ export function CategoriesNav({
                         href={href}
                         scroll={category.id === 0}
                       >
-                        {category.id === 0 ? t('common.home') : category.title}
+                        <span className={category.id === -1 ? 'uppercase' : ''}>
+                          {category.id === 0 ? t('common.home') : category.title}
+                        </span>
                       </Link>
                     </Button>
                   );

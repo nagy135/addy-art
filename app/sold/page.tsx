@@ -28,7 +28,7 @@ export default async function SoldPage() {
       <Banner />
       <CategoriesNav categories={allCategories} activeCategorySlug="sold" />
       <div className="container mx-auto px-4 py-4">
-        <h2 id="category-title" className="mb-5 text-3xl font-bold">{t('common.sold')}</h2>
+        <h2 id="category-title" className="mb-5 text-3xl font-bold uppercase">{t('common.sold')}</h2>
         <div id="products">
           <ProductsGrid products={soldProducts} categoryKey="sold" />
         </div>

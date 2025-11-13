@@ -93,8 +93,8 @@ export function ProductForm({
     resolver: zodResolver(productSchema),
     defaultValues: initialData
       ? {
-          ...initialData,
-        }
+        ...initialData,
+      }
       : { images: [], thumbnailIndex: 0, sold: false },
   });
 
