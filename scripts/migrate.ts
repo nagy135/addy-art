@@ -96,6 +96,12 @@ function ensureSortOrderOnProducts(db: Database.Database): void {
   backfill();
 }
 
+function ensureSoldAtOnProducts(db: Database.Database): void {
+  if (!columnExists(db, 'products', 'sold_at')) {
+    db.exec(`ALTER TABLE products ADD COLUMN sold_at INTEGER;`);
+  }
+}
+
 function main(): void {
   const db = new Database(dbPath);
   try {
@@ -103,6 +109,7 @@ function main(): void {
     ensureParentIdOnCategories(db);
     ensureProductImagesTableAndBackfill(db);
     ensureSortOrderOnProducts(db);
+    ensureSoldAtOnProducts(db);
     // Add future migration steps here
     console.log('Migration completed.');
   } finally {

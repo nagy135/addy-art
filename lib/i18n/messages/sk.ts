@@ -23,6 +23,7 @@ export const sk = {
     noPosts: 'Zatiaľ žiadne príspevky.',
     back: 'Späť',
     all: 'Všetko',
+    sold: 'Predané',
   },
   admin: {
     dashboard: 'Panel Správcu',
@@ -80,6 +81,7 @@ export const sk = {
     descriptionMarkdown: 'Popis (Markdown)',
     contentMarkdown: 'Obsah (Markdown)',
     published: 'Publikované',
+    sold: 'Predané',
     save: 'Uložiť',
     saving: 'Ukladá sa...',
     edit: 'Upraviť',

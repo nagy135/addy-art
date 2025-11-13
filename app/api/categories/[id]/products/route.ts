@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { auth } from '@/app/api/auth/[...nextauth]/route';
 import { db } from '@/db';
 import { products } from '@/db/schema';
-import { eq } from 'drizzle-orm';
+import { eq, and, isNull } from 'drizzle-orm';
 import { z } from 'zod';
 
 export const runtime = 'nodejs';
@@ -21,7 +21,8 @@ export async function GET(
     }
 
     const categoryProducts = await db.query.products.findMany({
-      where: (products, { eq }) => eq(products.categoryId, categoryId),
+      where: (products, { eq, and, isNull }) => 
+        and(eq(products.categoryId, categoryId), isNull(products.soldAt)),
       with: { images: true },
       orderBy: (products, { asc, desc }) => [asc(products.sortOrder), desc(products.createdAt)],
     });
@@ -65,7 +66,7 @@ export async function PUT(
     const existingProducts = await db
       .select({ id: products.id })
       .from(products)
-      .where(eq(products.categoryId, categoryId));
+      .where(and(eq(products.categoryId, categoryId), isNull(products.soldAt)));
     const existingIds = new Set(existingProducts.map((p) => p.id));
 
     if (existingIds.size !== orderedProductIds.length) {

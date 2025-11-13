@@ -14,6 +14,7 @@ const productSchema = z
     categoryId: z.number().min(1),
     images: z.array(z.string().min(1)).min(1),
     thumbnailIndex: z.number().int().min(0),
+    sold: z.boolean().optional(),
   })
   .refine((data) => data.thumbnailIndex < data.images.length, {
     message: 'thumbnailIndex out of range',
@@ -60,6 +61,7 @@ export async function PUT(
         categoryId: validated.categoryId,
         imagePath: thumbnailPath,
         sortOrder: sortOrderToSet ?? 0,
+        soldAt: validated.sold ? new Date() : null,
       })
       .where(eq(products.id, parseInt(id)));
 

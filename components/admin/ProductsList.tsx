@@ -23,6 +23,7 @@ type Product = {
   descriptionMd: string;
   priceCents: number;
   imagePath: string;
+  soldAt?: Date | null;
   images?: { id: number; imagePath: string; isThumbnail: boolean }[];
   category: {
     id: number;
@@ -80,6 +81,7 @@ export function ProductsList({
             <TableHead>{t('tables.name')}</TableHead>
             <TableHead>{t('forms.category')}</TableHead>
             <TableHead>{t('tables.price')}</TableHead>
+            <TableHead>{t('forms.sold')}</TableHead>
             <TableHead className="text-right">{t('tables.actions')}</TableHead>
           </TableRow>
         </TableHeader>
@@ -102,6 +104,7 @@ export function ProductsList({
               <TableCell className="font-medium capitalize">{product.title}</TableCell>
               <TableCell>{product.category.title}</TableCell>
               <TableCell>{formatPrice(product.priceCents)}</TableCell>
+              <TableCell>{product.soldAt ? '✓' : ''}</TableCell>
               <TableCell className="text-right">
                 <div className="flex justify-end gap-2">
                   <ProductForm
@@ -114,6 +117,7 @@ export function ProductsList({
                       images: product.images?.map((i) => i.imagePath) || [product.imagePath],
                       thumbnailIndex:
                         product.images?.findIndex((i) => i.isThumbnail) ?? 0,
+                      sold: !!product.soldAt,
                     }}
                     categories={categories}
                   />

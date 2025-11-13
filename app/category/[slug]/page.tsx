@@ -52,11 +52,14 @@ export default async function CategoryPage({
     productCategoryIds = [category.id, ...subcategories.map((sub) => sub.id)];
   }
 
-  // Fetch products from the selected categories
+  // Fetch products from the selected categories (excluding sold items)
   const allProducts = await db.query.products.findMany({
-    where: productCategoryIds.length === 1
-      ? eq(products.categoryId, productCategoryIds[0])
-      : or(...productCategoryIds.map((id) => eq(products.categoryId, id))),
+    where: (products, { eq, or, and, isNull }) => {
+      const categoryCondition = productCategoryIds.length === 1
+        ? eq(products.categoryId, productCategoryIds[0])
+        : or(...productCategoryIds.map((id) => eq(products.categoryId, id)));
+      return and(categoryCondition, isNull(products.soldAt));
+    },
     with: { images: true },
     orderBy: (products, { asc, desc }) => [asc(products.sortOrder), desc(products.createdAt)],
   });

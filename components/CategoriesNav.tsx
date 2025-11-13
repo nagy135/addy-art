@@ -42,8 +42,15 @@ export function CategoriesNav({
   // Filter to only root categories (no parentId)
   const rootCategories = categories.filter((cat) => !cat.parentId);
 
-  // Prepend home category to the list
-  const allCategories = [homeCategory, ...rootCategories];
+  // Virtual "sold" category
+  const soldCategory: Category = {
+    id: -1,
+    title: t('common.sold'),
+    slug: 'sold',
+  };
+
+  // Prepend home category and append sold category to the list
+  const allCategories = [homeCategory, ...rootCategories, soldCategory];
 
   // Determine active category based on pathname or prop
   const getActiveCategorySlug = () => {
@@ -52,6 +59,9 @@ export function CategoriesNav({
     }
     if (pathname === '/') {
       return '';
+    }
+    if (pathname === '/sold') {
+      return 'sold';
     }
     const categoryMatch = pathname.match(/^\/category\/([^/]+)/);
     if (categoryMatch) {
@@ -69,7 +79,11 @@ export function CategoriesNav({
         <div className="hidden md:flex justify-center gap-4">
           {allCategories.map((category) => {
             const isActive = activeSlug === category.slug;
-            const href = category.id === 0 ? '/' : `/category/${category.slug}`;
+            const href = category.id === 0 
+              ? '/' 
+              : category.id === -1 
+                ? '/sold' 
+                : `/category/${category.slug}`;
             return (
               <Button 
                 key={category.id} 
@@ -103,7 +117,11 @@ export function CategoriesNav({
               <div className="mt-6 flex flex-col gap-2 px-2">
                 {allCategories.map((category) => {
                   const isActive = activeSlug === category.slug;
-                  const href = category.id === 0 ? '/' : `/category/${category.slug}`;
+                  const href = category.id === 0 
+                    ? '/' 
+                    : category.id === -1 
+                      ? '/sold' 
+                      : `/category/${category.slug}`;
                   return (
                     <Button
                       key={category.id}

@@ -39,6 +39,7 @@ function createProductSchema(t: (key: string) => string) {
       categoryId: z.number().min(1, t('forms.categoryRequired')),
       images: z.array(z.string().min(1, t('forms.imageRequired'))).min(1, t('forms.imageRequired')),
       thumbnailIndex: z.number().int().min(0),
+      sold: z.boolean().optional(),
     })
     .refine((data) => data.thumbnailIndex < data.images.length, {
       message: t('forms.imageRequired'),
@@ -68,6 +69,7 @@ export function ProductForm({
     categoryId: number;
     images: string[];
     thumbnailIndex: number;
+    sold?: boolean;
   };
   categories: Category[];
 }) {
@@ -93,12 +95,13 @@ export function ProductForm({
       ? {
           ...initialData,
         }
-      : { images: [], thumbnailIndex: 0 },
+      : { images: [], thumbnailIndex: 0, sold: false },
   });
 
   const images = watch('images');
   const categoryId = watch('categoryId');
   const priceCents = watch('priceCents');
+  const sold = watch('sold');
 
   // Convert cents to euros for display
   const priceEuros = priceCents && priceCents > 0 ? (priceCents / 100).toString() : '';
@@ -371,6 +374,18 @@ export function ProductForm({
             imageSrc={imagePreviewSrc}
             onCropComplete={handleCroppedImage}
           />
+          <div className="flex items-center space-x-2">
+            <input
+              type="checkbox"
+              id="sold"
+              checked={sold || false}
+              onChange={(e) => setValue('sold', e.target.checked, { shouldValidate: true })}
+              className="h-4 w-4 rounded border-gray-300"
+            />
+            <Label htmlFor="sold" className="mb-0 cursor-pointer">
+              {t('forms.sold')}
+            </Label>
+          </div>
           <div>
             <Label htmlFor="descriptionMd" className="mb-2">{t('forms.descriptionMarkdown')}</Label>
             <Textarea

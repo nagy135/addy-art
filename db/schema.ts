@@ -65,6 +65,7 @@ export const products = sqliteTable('products', {
     .notNull()
     .references(() => categories.id, { onDelete: 'cascade' }),
   sortOrder: integer('sort_order').notNull().default(1),
+  soldAt: integer('sold_at', { mode: 'timestamp_ms' }),
   createdAt: integer('created_at', { mode: 'timestamp_ms' }).notNull().$defaultFn(() => new Date()),
 });
 
