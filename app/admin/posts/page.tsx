@@ -14,6 +14,9 @@ export default async function AdminPostsPage() {
   }
 
   const allPosts = await db.query.posts.findMany({
+    with: {
+      images: true,
+    },
     orderBy: (posts, { desc }) => [desc(posts.createdAt)],
   });
 

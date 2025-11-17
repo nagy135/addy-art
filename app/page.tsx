@@ -72,7 +72,7 @@ export default async function Home() {
                             blockquote: ({ children }) => <blockquote className="border-l-4 border-muted pl-2 italic mb-0">{children}</blockquote>,
                           }}
                         >
-                          {post.contentMd}
+                          {post.contentMd.substring(0, 100)}
                         </ReactMarkdown>
                       </div>
                     </CardContent>

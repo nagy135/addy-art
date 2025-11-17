@@ -15,6 +15,14 @@ import { Button } from '@/components/ui/button';
 import { PostForm } from './PostForm';
 import { useI18n } from '@/components/I18nProvider';
 
+type PostImage = {
+  id: number;
+  postId: number;
+  imagePath: string;
+  isThumbnail: boolean;
+  createdAt: Date;
+};
+
 type Post = {
   id: number;
   title: string;
@@ -23,6 +31,7 @@ type Post = {
   imagePath: string | null;
   publishedAt: Date | null;
   createdAt: Date;
+  images?: PostImage[];
 };
 
 export function PostsList({
@@ -91,7 +100,21 @@ export function PostsList({
                     initialData={{
                       title: post.title,
                       contentMd: post.contentMd,
-                      imagePath: post.imagePath,
+                      images: (post.images ?? [])
+                        .slice()
+                        .sort((a, b) => a.createdAt.getTime() - b.createdAt.getTime())
+                        .map((image) => image.imagePath),
+                      thumbnailIndex: (() => {
+                        const images = post.images ?? [];
+                        if (images.length === 0) {
+                          return 0;
+                        }
+                        const sorted = images
+                          .slice()
+                          .sort((a, b) => a.createdAt.getTime() - b.createdAt.getTime());
+                        const thumbnailIdx = sorted.findIndex((image) => image.isThumbnail);
+                        return thumbnailIdx === -1 ? 0 : thumbnailIdx;
+                      })(),
                       publishedAt: post.publishedAt,
                     }}
                     authorId={authorId}

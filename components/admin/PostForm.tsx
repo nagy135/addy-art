@@ -20,14 +20,39 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { useI18n } from '@/components/I18nProvider';
+import { Star, Trash2 } from 'lucide-react';
 
 function createPostSchema(t: (key: string) => string) {
-  return z.object({
-    title: z.string().min(1, t('forms.titleRequired')),
-    contentMd: z.string().min(1, t('forms.contentRequired')),
-    imagePath: z.string().optional(),
-    published: z.boolean(),
-  });
+  return z
+    .object({
+      title: z.string().min(1, t('forms.titleRequired')),
+      contentMd: z.string().min(1, t('forms.contentRequired')),
+      images: z.array(z.string().min(1, t('forms.imageRequired'))).default([]),
+      thumbnailIndex: z.number().int().min(0).optional(),
+      published: z.boolean(),
+    })
+    .superRefine((data, ctx) => {
+      if (data.images.length === 0) {
+        return;
+      }
+
+      if (data.thumbnailIndex === undefined) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          path: ['thumbnailIndex'],
+          message: t('forms.imageRequired'),
+        });
+        return;
+      }
+
+      if (data.thumbnailIndex < 0 || data.thumbnailIndex >= data.images.length) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          path: ['thumbnailIndex'],
+          message: t('forms.imageRequired'),
+        });
+      }
+    });
 }
 
 type PostFormData = z.infer<ReturnType<typeof createPostSchema>>;
@@ -37,7 +62,8 @@ type PostFormProps = {
   initialData?: {
     title: string;
     contentMd: string;
-    imagePath?: string | null;
+    images: string[];
+    thumbnailIndex: number;
     publishedAt: Date | null;
   };
   authorId: string;
@@ -63,21 +89,22 @@ export function PostForm({
     reset,
   } = useForm<PostFormData>({
     resolver: zodResolver(postSchema),
-    defaultValues: {
-      ...initialData,
-      imagePath: initialData?.imagePath || undefined,
-      published: !!initialData?.publishedAt,
-    },
+    defaultValues: initialData
+      ? {
+        ...initialData,
+        published: !!initialData.publishedAt,
+      }
+      : { images: [], thumbnailIndex: 0, published: false },
   });
 
   const published = watch('published');
-  const imagePath = watch('imagePath');
+  const images = watch('images');
+  const thumbnailIndex = watch('thumbnailIndex') ?? 0;
 
   useEffect(() => {
     if (open && initialData) {
       reset({
         ...initialData,
-        imagePath: initialData.imagePath || undefined,
         published: !!initialData.publishedAt,
       });
     }
@@ -98,8 +125,12 @@ export function PostForm({
         throw new Error('Failed to upload image');
       }
 
-      const { path } = await response.json();
-      setValue('imagePath', path);
+      const json = (await response.json()) as { path: string };
+      const nextImages = [...images, json.path];
+      setValue('images', nextImages, { shouldValidate: true });
+      if (nextImages.length === 1) {
+        setValue('thumbnailIndex', 0, { shouldValidate: true });
+      }
     } catch (_error) {
       alert(t('messages.uploadImageFailed'));
     } finally {
@@ -127,10 +158,9 @@ export function PostForm({
       }
 
       if (postId) {
-        // Reset with the submitted data (what was just saved)
         reset(data);
       } else {
-        reset();
+        reset({ images: [], thumbnailIndex: 0, published: false });
       }
       setOpen(false);
       router.refresh();
@@ -144,15 +174,12 @@ export function PostForm({
   const handleOpenChange = (newOpen: boolean) => {
     setOpen(newOpen);
     if (newOpen && initialData) {
-      // Reset form when dialog opens with initial data
       reset({
         ...initialData,
-        imagePath: initialData.imagePath || undefined,
         published: !!initialData.publishedAt,
       });
     } else if (!newOpen && !postId) {
-      // Reset form when closing add dialog
-      reset();
+      reset({ images: [], thumbnailIndex: 0, published: false });
     }
   };
 
@@ -182,22 +209,71 @@ export function PostForm({
               id="image"
               type="file"
               accept="image/*"
-              onChange={(e) => {
-                const file = e.target.files?.[0];
-                if (file) {
-                  handleFileUpload(file);
+              multiple
+              onChange={(event) => {
+                const { files } = event.target;
+                if (!files || files.length === 0) {
+                  return;
                 }
+                const file = files[0];
+                void handleFileUpload(file);
               }}
               disabled={uploading}
             />
             {uploading && <p className="mt-1 text-sm text-muted-foreground">{t('forms.uploading')}</p>}
-            {imagePath && (
-              <div className="mt-2 relative h-32 w-32">
-                <Image src={imagePath} alt="Preview" fill className="object-cover rounded" />
+            {images.length > 0 && (
+              <div className="mt-3 grid grid-cols-3 gap-3">
+                {images.map((path, index) => (
+                  <div key={path} className="relative">
+                    <div className="relative h-24 w-full overflow-hidden rounded">
+                      <Image src={path} alt={`Image ${index + 1}`} fill className="object-cover" />
+                    </div>
+                    <div className="mt-2 flex items-center justify-center gap-1">
+                      <Button
+                        type="button"
+                        variant={thumbnailIndex === index ? 'default' : 'outline'}
+                        size="icon"
+                        className="h-8 w-8"
+                        onClick={() => setValue('thumbnailIndex', index, { shouldValidate: true })}
+                        title={thumbnailIndex === index ? 'Thumbnail' : 'Set as thumbnail'}
+                      >
+                        <Star
+                          className={`h-4 w-4 ${thumbnailIndex === index ? 'fill-current' : ''}`}
+                        />
+                      </Button>
+                      <Button
+                        type="button"
+                        variant="destructive"
+                        size="icon"
+                        className="h-8 w-8"
+                        onClick={() => {
+                          const nextImages = images.filter((_, imageIndex) => imageIndex !== index);
+                          setValue('images', nextImages, { shouldValidate: true });
+
+                          if (nextImages.length === 0) {
+                            setValue('thumbnailIndex', 0, { shouldValidate: false });
+                            return;
+                          }
+
+                          if (index === thumbnailIndex) {
+                            setValue('thumbnailIndex', 0, { shouldValidate: true });
+                          } else if (index < thumbnailIndex) {
+                            setValue('thumbnailIndex', thumbnailIndex - 1, { shouldValidate: true });
+                          }
+                        }}
+                        title="Delete image"
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </Button>
+                    </div>
+                  </div>
+                ))}
               </div>
             )}
-            {errors.imagePath && (
-              <p className="mt-1 text-sm text-destructive">{errors.imagePath.message}</p>
+            {(errors.images || errors.thumbnailIndex) && (
+              <p className="mt-1 text-sm text-destructive">
+                {errors.images?.message ?? errors.thumbnailIndex?.message}
+              </p>
             )}
           </div>
           <div>
@@ -216,7 +292,7 @@ export function PostForm({
               type="checkbox"
               id="published"
               checked={published}
-              onChange={(e) => setValue('published', e.target.checked)}
+              onChange={(event) => setValue('published', event.target.checked)}
               className="h-4 w-4"
             />
             <Label htmlFor="published">{t('forms.published')}</Label>
