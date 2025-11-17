@@ -27,7 +27,7 @@ function createPostSchema(t: (key: string) => string) {
     .object({
       title: z.string().min(1, t('forms.titleRequired')),
       contentMd: z.string().min(1, t('forms.contentRequired')),
-      images: z.array(z.string().min(1, t('forms.imageRequired'))).default([]),
+      images: z.array(z.string().min(1, t('forms.imageRequired'))),
       thumbnailIndex: z.number().int().min(0).optional(),
       published: z.boolean(),
     })
@@ -92,6 +92,7 @@ export function PostForm({
     defaultValues: initialData
       ? {
         ...initialData,
+        images: initialData.images ?? [],
         thumbnailIndex: initialData.thumbnailIndex ?? 0,
         published: !!initialData.publishedAt,
       }
@@ -106,6 +107,7 @@ export function PostForm({
     if (open && initialData) {
       reset({
         ...initialData,
+        images: initialData.images ?? [],
         thumbnailIndex: initialData.thumbnailIndex ?? 0,
         published: !!initialData.publishedAt,
       });
@@ -178,6 +180,7 @@ export function PostForm({
     if (newOpen && initialData) {
       reset({
         ...initialData,
+        images: initialData.images ?? [],
         thumbnailIndex: initialData.thumbnailIndex ?? 0,
         published: !!initialData.publishedAt,
       });
