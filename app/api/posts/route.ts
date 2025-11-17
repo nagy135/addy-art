@@ -9,7 +9,6 @@ const postSchema = z.object({
   title: z.string().min(1),
   contentMd: z.string().min(1),
   imagePath: z.string().optional(),
-  authorId: z.string().min(1),
   published: z.boolean(),
 });
 
@@ -28,7 +27,7 @@ export async function POST(request: NextRequest) {
       slug: generateSlug(validated.title),
       contentMd: validated.contentMd,
       imagePath: validated.imagePath || null,
-      authorId: validated.authorId,
+      authorId: session.user.id,
       publishedAt: validated.published ? new Date() : null,
     });
 

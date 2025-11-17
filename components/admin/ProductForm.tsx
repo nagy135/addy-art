@@ -78,6 +78,7 @@ export function ProductForm({
   const [open, setOpen] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [uploading, setUploading] = useState(false);
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [cropperOpen, setCropperOpen] = useState(false);
   const [imagePreviewSrc, setImagePreviewSrc] = useState<string>('');
   const [recropIndex, setRecropIndex] = useState<number | null>(null);
@@ -113,6 +114,7 @@ export function ProductForm({
   }, [open, initialData, reset]);
 
   const handleFileSelect = (file: File) => {
+    setSelectedFile(file);
     const reader = new FileReader();
     reader.onloadend = () => {
       setImagePreviewSrc(reader.result as string);
@@ -154,11 +156,20 @@ export function ProductForm({
         }
       }
       setImagePreviewSrc('');
+      setSelectedFile(null);
     } catch (_error) {
       alert(t('messages.uploadImageFailed'));
     } finally {
       setUploading(false);
     }
+  };
+
+  const handleUseOriginalImage = () => {
+    if (!selectedFile) {
+      return;
+    }
+    void handleCroppedImage(selectedFile);
+    setCropperOpen(false);
   };
 
   const onSubmit = async (data: ProductFormData) => {
@@ -373,6 +384,7 @@ export function ProductForm({
             onOpenChange={setCropperOpen}
             imageSrc={imagePreviewSrc}
             onCropComplete={handleCroppedImage}
+            onUseOriginal={selectedFile ? handleUseOriginalImage : undefined}
           />
           <div className="flex items-center space-x-2">
             <input

@@ -81,16 +81,14 @@ export const LayoutGrid = ({ cards }: { cards: Card[] }) => {
   );
 };
 
-const ImageComponent = ({ card, selected }: { card: Card, selected: boolean }) => {
+const ImageComponent = ({ card }: { card: Card, selected: boolean }) => {
   return (
     <motion.img
       layoutId={`image-${card.id}-image`}
       src={card.thumbnail}
       height="500"
       width="500"
-      className={cn(
-        "absolute inset-0 h-full w-full transition duration-200", selected ? "object-contain" : "object-cover object-center"
-      )}
+      className={cn("absolute inset-0 h-full w-full transition duration-200 object-contain")}
       alt="thumbnail"
       onError={(e) => {
         console.error('Image failed to load:', card.thumbnail);

@@ -39,7 +39,7 @@ export default async function Home() {
                         src={post.imagePath}
                         alt={post.title}
                         fill
-                        className="object-cover"
+                        className="object-contain"
                       />
                     </div>
                   )}

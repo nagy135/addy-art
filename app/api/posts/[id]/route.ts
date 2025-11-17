@@ -10,7 +10,6 @@ const postSchema = z.object({
   title: z.string().min(1),
   contentMd: z.string().min(1),
   imagePath: z.string().optional(),
-  authorId: z.string().min(1),
   published: z.boolean(),
 });
 

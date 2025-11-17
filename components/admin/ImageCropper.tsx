@@ -24,6 +24,11 @@ type ImageCropperProps = {
   onOpenChange: (open: boolean) => void;
   imageSrc: string;
   onCropComplete: (croppedImageBlob: Blob) => void;
+  /**
+   * Optional callback to completely skip cropping and use the original image.
+   * When provided, a "Use Original Image" button will be shown.
+   */
+  onUseOriginal?: () => void;
 };
 
 type AspectRatio = 'single' | 'double';
@@ -38,6 +43,7 @@ export function ImageCropper({
   onOpenChange,
   imageSrc,
   onCropComplete,
+  onUseOriginal,
 }: ImageCropperProps) {
   const [crop, setCrop] = useState({ x: 0, y: 0 });
   const [zoom, setZoom] = useState(1);
@@ -164,7 +170,8 @@ export function ImageCropper({
         <DialogHeader>
           <DialogTitle>Crop Image</DialogTitle>
           <DialogDescription>
-            Select aspect ratio and crop your image. Quality will be preserved.
+            Select aspect ratio and crop your image, or use the original without cropping using the
+            button below. Quality will be preserved.
           </DialogDescription>
         </DialogHeader>
         <div className="space-y-4">
@@ -236,6 +243,22 @@ export function ImageCropper({
           <Button type="button" variant="outline" onClick={handleCancel}>
             Cancel
           </Button>
+          {onUseOriginal && (
+            <Button
+              type="button"
+              variant="secondary"
+              onClick={() => {
+                onUseOriginal();
+                onOpenChange(false);
+                setCrop({ x: 0, y: 0 });
+                setZoom(1);
+                setAspectRatio('single');
+                setCroppedAreaPixels(null);
+              }}
+            >
+              Use Original Image
+            </Button>
+          )}
           <Button
             type="button"
             onClick={handleApplyCrop}
