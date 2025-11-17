@@ -63,7 +63,7 @@ type PostFormProps = {
     title: string;
     contentMd: string;
     images: string[];
-    thumbnailIndex: number;
+    thumbnailIndex?: number;
     publishedAt: Date | null;
   };
   authorId: string;
@@ -92,6 +92,7 @@ export function PostForm({
     defaultValues: initialData
       ? {
         ...initialData,
+        thumbnailIndex: initialData.thumbnailIndex ?? 0,
         published: !!initialData.publishedAt,
       }
       : { images: [], thumbnailIndex: 0, published: false },
@@ -105,6 +106,7 @@ export function PostForm({
     if (open && initialData) {
       reset({
         ...initialData,
+        thumbnailIndex: initialData.thumbnailIndex ?? 0,
         published: !!initialData.publishedAt,
       });
     }
@@ -176,6 +178,7 @@ export function PostForm({
     if (newOpen && initialData) {
       reset({
         ...initialData,
+        thumbnailIndex: initialData.thumbnailIndex ?? 0,
         published: !!initialData.publishedAt,
       });
     } else if (!newOpen && !postId) {
