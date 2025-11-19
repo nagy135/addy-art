@@ -7,6 +7,7 @@ const orderSchema = z.object({
   productId: z.number(),
   email: z.string().email().optional(),
   phone: z.string().optional(),
+  note: z.string().optional(),
 }).refine((data) => data.email || data.phone, {
   message: 'Either email or phone is required',
 });
@@ -23,6 +24,7 @@ export async function POST(request: NextRequest) {
       productId: validated.productId,
       contactType,
       contactValue,
+      note: validated.note,
     });
 
     return NextResponse.json({ success: true });

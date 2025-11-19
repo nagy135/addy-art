@@ -65,6 +65,7 @@ export const products = sqliteTable('products', {
     .notNull()
     .references(() => categories.id, { onDelete: 'cascade' }),
   sortOrder: integer('sort_order').notNull().default(1),
+  isRecreatable: integer('is_recreatable', { mode: 'boolean' }).notNull().default(false),
   soldAt: integer('sold_at', { mode: 'timestamp_ms' }),
   createdAt: integer('created_at', { mode: 'timestamp_ms' }).notNull().$defaultFn(() => new Date()),
 });
@@ -109,6 +110,8 @@ export const orders = sqliteTable('orders', {
     .references(() => products.id, { onDelete: 'cascade' }),
   contactType: text('contact_type', { enum: ['email', 'phone'] }).notNull(),
   contactValue: text('contact_value').notNull(),
+  note: text('note'),
+  seen: integer('seen', { mode: 'boolean' }).notNull().default(false),
   createdAt: integer('created_at', { mode: 'timestamp_ms' }).notNull().$defaultFn(() => new Date()),
 });
 

@@ -67,11 +67,25 @@ export default async function ProductPage({
           />
           <div>
             <h1 className="mb-4 text-4xl font-bold">{product.title}</h1>
-            <p className="mb-4 text-2xl font-semibold">{formatPrice(product.priceCents)}</p>
+            <p className="mb-4 text-2xl font-semibold">
+              {formatPrice(product.priceCents)}
+              {product.soldAt && !product.isRecreatable && (
+                <span className="ml-3 inline-block rounded-full bg-red-100 px-3 py-1 text-sm font-medium text-red-800">
+                  {t('common.sold')}
+                </span>
+              )}
+              {product.soldAt && product.isRecreatable && (
+                <span className="ml-3 inline-block rounded-full bg-amber-100 px-3 py-1 text-sm font-medium text-amber-800">
+                  {t('common.isRecreatable')}
+                </span>
+              )}
+            </p>
             <div className="prose mb-6 max-w-none">
               <ReactMarkdown>{product.descriptionMd}</ReactMarkdown>
             </div>
-            <ProductOrderDialog productId={product.id} productTitle={product.title} />
+            {(!product.soldAt || product.isRecreatable) && (
+              <ProductOrderDialog productId={product.id} productTitle={product.title} />
+            )}
           </div>
         </div>
       </div>

@@ -102,6 +102,12 @@ function ensureSoldAtOnProducts(db: Database.Database): void {
   }
 }
 
+function ensureIsRecreatableOnProducts(db: Database.Database): void {
+  if (!columnExists(db, 'products', 'is_recreatable')) {
+    db.exec(`ALTER TABLE products ADD COLUMN is_recreatable INTEGER NOT NULL DEFAULT 0;`);
+  }
+}
+
 function main(): void {
   const db = new Database(dbPath);
   try {
@@ -110,6 +116,7 @@ function main(): void {
     ensureProductImagesTableAndBackfill(db);
     ensureSortOrderOnProducts(db);
     ensureSoldAtOnProducts(db);
+    ensureIsRecreatableOnProducts(db);
     // Add future migration steps here
     console.log('Migration completed.');
   } finally {

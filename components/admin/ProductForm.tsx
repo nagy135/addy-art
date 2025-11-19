@@ -40,6 +40,7 @@ function createProductSchema(t: (key: string) => string) {
       images: z.array(z.string().min(1, t('forms.imageRequired'))).min(1, t('forms.imageRequired')),
       thumbnailIndex: z.number().int().min(0),
       sold: z.boolean().optional(),
+      isRecreatable: z.boolean().optional(),
     })
     .refine((data) => data.thumbnailIndex < data.images.length, {
       message: t('forms.imageRequired'),
@@ -70,6 +71,7 @@ export function ProductForm({
     images: string[];
     thumbnailIndex: number;
     sold?: boolean;
+    isRecreatable?: boolean;
   };
   categories: Category[];
 }) {
@@ -96,13 +98,14 @@ export function ProductForm({
       ? {
         ...initialData,
       }
-      : { images: [], thumbnailIndex: 0, sold: false },
+      : { images: [], thumbnailIndex: 0, sold: false, isRecreatable: false },
   });
 
   const images = watch('images');
   const categoryId = watch('categoryId');
   const priceCents = watch('priceCents');
   const sold = watch('sold');
+  const isRecreatable = watch('isRecreatable');
 
   // Convert cents to euros for display
   const priceEuros = priceCents && priceCents > 0 ? (priceCents / 100).toString() : '';
@@ -391,12 +394,33 @@ export function ProductForm({
               type="checkbox"
               id="sold"
               checked={sold || false}
-              onChange={(e) => setValue('sold', e.target.checked, { shouldValidate: true })}
+              onChange={(e) => {
+                const isSold = e.target.checked;
+                setValue('sold', isSold, { shouldValidate: true });
+                if (!isSold) {
+                   setValue('isRecreatable', false, { shouldValidate: true });
+                }
+              }}
               className="h-4 w-4 rounded border-gray-300"
             />
             <Label htmlFor="sold" className="mb-0 cursor-pointer">
               {t('forms.sold')}
             </Label>
+            
+            {sold && (
+              <div className="flex items-center space-x-2 ml-6">
+                <input
+                  type="checkbox"
+                  id="isRecreatable"
+                  checked={isRecreatable || false}
+                  onChange={(e) => setValue('isRecreatable', e.target.checked, { shouldValidate: true })}
+                  className="h-4 w-4 rounded border-gray-300"
+                />
+                <Label htmlFor="isRecreatable" className="mb-0 cursor-pointer">
+                  {t('forms.isRecreatable')}
+                </Label>
+              </div>
+            )}
           </div>
           <div>
             <Label htmlFor="descriptionMd" className="mb-2">{t('forms.descriptionMarkdown')}</Label>

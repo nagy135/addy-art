@@ -14,6 +14,7 @@ const productSchema = z
     images: z.array(z.string().min(1)).min(1),
     thumbnailIndex: z.number().int().min(0),
     sold: z.boolean().optional(),
+    isRecreatable: z.boolean().optional(),
   })
   .refine((data) => data.thumbnailIndex < data.images.length, {
     message: 'thumbnailIndex out of range',
@@ -50,6 +51,7 @@ export async function POST(request: NextRequest) {
         imagePath: thumbnailPath, // keep for backward compatibility
         sortOrder: nextOrder,
         soldAt: validated.sold ? new Date() : null,
+        isRecreatable: validated.isRecreatable ?? false,
       })
       .returning({ id: products.id });
 

@@ -12,6 +12,7 @@ import {
   DialogTrigger,
 } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
+import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -22,6 +23,7 @@ const orderSchema = z
   .object({
     email: z.string().email().optional(),
     phone: z.string().optional(),
+    note: z.string().optional(),
   })
   .refine((data) => data.email || data.phone, {
     message: 'order.validation',
@@ -59,6 +61,7 @@ export function ProductOrderDialog({
           productId,
           email: data.email || undefined,
           phone: data.phone || undefined,
+          note: data.note || undefined,
         }),
       });
 
@@ -112,6 +115,14 @@ export function ProductOrderDialog({
             {errors.phone && (
               <p className="mt-1 text-sm text-destructive">{errors.phone.message}</p>
             )}
+          </div>
+          <div>
+            <Label htmlFor="note" className="mb-2">{t('common.note')}</Label>
+            <Textarea
+              id="note"
+              placeholder={t('common.note')}
+              {...register('note')}
+            />
           </div>
           <DialogFooter>
             <Button type="button" variant="outline" onClick={() => setOpen(false)}>

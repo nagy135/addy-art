@@ -6,6 +6,7 @@ import { formatPrice } from '@/lib/format-price';
 import { useState, useEffect } from 'react';
 import { usePathname, useSearchParams } from 'next/navigation';
 import { ProductOrderDialog } from '@/components/ProductOrderDialog';
+import { useI18n } from '@/components/I18nProvider';
 
 type Product = {
   id: number;
@@ -15,13 +16,31 @@ type Product = {
   priceCents: number;
   imagePath: string;
   images?: { imagePath: string; isThumbnail: boolean }[];
+  soldAt?: Date | null;
+  isRecreatable: boolean;
 };
 
 const ProductCard = ({ product }: { product: Product }) => {
+  const { t } = useI18n();
+  const isSold = !!product.soldAt;
+  const canOrder = !isSold || product.isRecreatable;
+
   return (
     <div>
       <p className="font-bold md:text-4xl text-xl text-white">{product.title}</p>
-      <p className="font-normal text-base text-white mt-2">{formatPrice(product.priceCents)}</p>
+      <p className="font-normal text-base text-white mt-2">
+        {formatPrice(product.priceCents)}
+        {isSold && !product.isRecreatable && (
+          <span className="ml-2 inline-block rounded-full bg-red-600 px-2 py-1 text-xs font-bold text-white">
+            {t('common.sold')}
+          </span>
+        )}
+        {isSold && product.isRecreatable && (
+            <span className="ml-2 inline-block rounded-full bg-amber-600 px-2 py-1 text-xs font-bold text-white">
+            {t('common.isRecreatable')}
+          </span>
+        )}
+      </p>
       <div className="flex gap-3 items-center mt-4">
         <Link
           href={`/products/${product.slug}`}
@@ -33,7 +52,7 @@ const ProductCard = ({ product }: { product: Product }) => {
           Detail produktu
         </Link>
 
-        <ProductOrderDialog productId={product.id} productTitle={product.title} />
+        {canOrder && <ProductOrderDialog productId={product.id} productTitle={product.title} />}
       </div>
     </div>
   );

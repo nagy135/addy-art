@@ -24,6 +24,7 @@ type Product = {
   priceCents: number;
   imagePath: string;
   soldAt?: Date | null;
+  isRecreatable?: boolean;
   images?: { id: number; imagePath: string; isThumbnail: boolean }[];
   category: {
     id: number;
@@ -104,7 +105,15 @@ export function ProductsList({
               <TableCell className="font-medium capitalize">{product.title}</TableCell>
               <TableCell>{product.category.title}</TableCell>
               <TableCell>{formatPrice(product.priceCents)}</TableCell>
-              <TableCell>{product.soldAt ? '✓' : ''}</TableCell>
+              <TableCell>
+                {product.soldAt ? (
+                  <span title={product.isRecreatable ? t('common.isRecreatable') : t('common.sold')}>
+                    ✓{product.isRecreatable && ' 🔄'}
+                  </span>
+                ) : (
+                  ''
+                )}
+              </TableCell>
               <TableCell className="text-right">
                 <div className="flex justify-end gap-2">
                   <ProductForm
@@ -118,6 +127,7 @@ export function ProductsList({
                       thumbnailIndex:
                         product.images?.findIndex((i) => i.isThumbnail) ?? 0,
                       sold: !!product.soldAt,
+                      isRecreatable: product.isRecreatable,
                     }}
                     categories={categories}
                   />

@@ -38,7 +38,7 @@ const postSchema = z
 
 export async function POST(request: NextRequest) {
   const session = await auth();
-  if (!session?.user) {
+  if (!session?.user?.id) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
 
@@ -81,8 +81,14 @@ export async function POST(request: NextRequest) {
       );
     }
     console.error('Post creation error:', error);
+    if (error instanceof Error && 'code' in error && error.code === 'SQLITE_CONSTRAINT_FOREIGNKEY') {
+      return NextResponse.json(
+        { error: 'User not found or invalid author ID', details: 'The authenticated user does not exist in the database' },
+        { status: 400 }
+      );
+    }
     return NextResponse.json(
-      { error: 'Failed to create post' },
+      { error: 'Failed to create post', details: error instanceof Error ? error.message : 'Unknown error' },
       { status: 500 }
     );
   }
