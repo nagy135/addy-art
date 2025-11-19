@@ -108,6 +108,12 @@ function ensureIsRecreatableOnProducts(db: Database.Database): void {
   }
 }
 
+function ensureSeenOnOrders(db: Database.Database): void {
+  if (!columnExists(db, 'orders', 'seen')) {
+    db.exec(`ALTER TABLE orders ADD COLUMN seen INTEGER NOT NULL DEFAULT 0;`);
+  }
+}
+
 function main(): void {
   const db = new Database(dbPath);
   try {
@@ -117,6 +123,7 @@ function main(): void {
     ensureSortOrderOnProducts(db);
     ensureSoldAtOnProducts(db);
     ensureIsRecreatableOnProducts(db);
+    ensureSeenOnOrders(db);
     // Add future migration steps here
     console.log('Migration completed.');
   } finally {
