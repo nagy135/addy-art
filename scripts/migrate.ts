@@ -114,6 +114,12 @@ function ensureSeenOnOrders(db: Database.Database): void {
   }
 }
 
+function ensureNoteOnOrders(db: Database.Database): void {
+  if (!columnExists(db, 'orders', 'note')) {
+    db.exec(`ALTER TABLE orders ADD COLUMN note TEXT;`);
+  }
+}
+
 function main(): void {
   const db = new Database(dbPath);
   try {
@@ -124,6 +130,7 @@ function main(): void {
     ensureSoldAtOnProducts(db);
     ensureIsRecreatableOnProducts(db);
     ensureSeenOnOrders(db);
+    ensureNoteOnOrders(db);
     // Add future migration steps here
     console.log('Migration completed.');
   } finally {
