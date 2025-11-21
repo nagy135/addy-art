@@ -30,7 +30,14 @@ type Product = {
     id: number;
     title: string;
     slug: string;
-  };
+  } | null;
+  categories?: {
+    category: {
+      id: number;
+      title: string;
+      slug: string;
+    };
+  }[];
 };
 
 type Category = {
@@ -103,7 +110,11 @@ export function ProductsList({
                 </div>
               </TableCell>
               <TableCell className="font-medium capitalize">{product.title}</TableCell>
-              <TableCell>{product.category.title}</TableCell>
+              <TableCell>
+                {product.categories && product.categories.length > 0
+                  ? product.categories.map((pc) => pc.category.title).join(', ')
+                  : product.category?.title || '-'}
+              </TableCell>
               <TableCell>{formatPrice(product.priceCents)}</TableCell>
               <TableCell>
                 {product.soldAt ? (
@@ -122,7 +133,12 @@ export function ProductsList({
                       title: product.title,
                       descriptionMd: product.descriptionMd,
                       priceCents: product.priceCents,
-                      categoryId: product.category.id,
+                      categoryIds:
+                        product.categories && product.categories.length > 0
+                          ? product.categories.map((pc) => pc.category.id)
+                          : product.category
+                            ? [product.category.id]
+                            : [],
                       images: product.images?.map((i) => i.imagePath) || [product.imagePath],
                       thumbnailIndex:
                         product.images?.findIndex((i) => i.isThumbnail) ?? 0,

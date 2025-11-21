@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { auth } from '@/app/api/auth/[...nextauth]/route';
 import { db } from '@/db';
-import { products, productImages } from '@/db/schema';
+import { products, productImages, productCategories } from '@/db/schema';
 import { z } from 'zod';
 import { generateSlug } from '@/lib/generate-slug';
 
@@ -10,7 +10,7 @@ const productSchema = z
     title: z.string().min(1),
     descriptionMd: z.string().min(1),
     priceCents: z.number().min(1),
-    categoryId: z.number().min(1),
+    categoryIds: z.array(z.number().min(1)).min(1),
     images: z.array(z.string().min(1)).min(1),
     thumbnailIndex: z.number().int().min(0),
     sold: z.boolean().optional(),
@@ -33,9 +33,10 @@ export async function POST(request: NextRequest) {
 
     const thumbnailPath = validated.images[validated.thumbnailIndex];
 
-    // Compute default sortOrder: place at end of its category
+    // Compute default sortOrder: place at end of first category
+    const firstCategoryId = validated.categoryIds[0];
     const lastInCategory = await db.query.products.findFirst({
-      where: (products, { eq }) => eq(products.categoryId, validated.categoryId),
+      where: (products, { eq }) => eq(products.categoryId, firstCategoryId),
       orderBy: (products, { desc }) => [desc(products.sortOrder)],
     });
     const nextOrder = (lastInCategory?.sortOrder ?? 0) + 1;
@@ -47,7 +48,7 @@ export async function POST(request: NextRequest) {
         slug: generateSlug(validated.title),
         descriptionMd: validated.descriptionMd,
         priceCents: validated.priceCents,
-        categoryId: validated.categoryId,
+        categoryId: firstCategoryId, // keep for backward compatibility
         imagePath: thumbnailPath, // keep for backward compatibility
         sortOrder: nextOrder,
         soldAt: validated.sold ? new Date() : null,
@@ -57,11 +58,20 @@ export async function POST(request: NextRequest) {
 
     const productId = inserted.id;
 
+    // Insert product images
     await db.insert(productImages).values(
       validated.images.map((path, index) => ({
         productId,
         imagePath: path,
         isThumbnail: index === validated.thumbnailIndex,
+      }))
+    );
+
+    // Insert product-category relationships
+    await db.insert(productCategories).values(
+      validated.categoryIds.map((categoryId) => ({
+        productId,
+        categoryId,
       }))
     );
 
@@ -85,6 +95,11 @@ export async function GET() {
   const allProducts = await db.query.products.findMany({
     with: {
       category: true,
+      categories: {
+        with: {
+          category: true,
+        },
+      },
     },
     orderBy: (products, { desc }) => [desc(products.createdAt)],
   });

@@ -15,13 +15,7 @@ import {
 } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
+import MultipleSelector, { type Option } from '@/components/ui/multi-select';
 import { Textarea } from '@/components/ui/textarea';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -36,7 +30,7 @@ function createProductSchema(t: (key: string) => string) {
       title: z.string().min(1, t('forms.titleRequired')),
       descriptionMd: z.string().min(1, t('forms.descriptionRequired')),
       priceCents: z.number().min(1, t('forms.priceRequired')),
-      categoryId: z.number().min(1, t('forms.categoryRequired')),
+      categoryIds: z.array(z.number().min(1)).min(1, t('forms.categoryRequired')),
       images: z.array(z.string().min(1, t('forms.imageRequired'))).min(1, t('forms.imageRequired')),
       thumbnailIndex: z.number().int().min(0),
       sold: z.boolean().optional(),
@@ -67,7 +61,7 @@ export function ProductForm({
     title: string;
     descriptionMd: string;
     priceCents: number;
-    categoryId: number;
+    categoryIds: number[];
     images: string[];
     thumbnailIndex: number;
     sold?: boolean;
@@ -98,11 +92,11 @@ export function ProductForm({
       ? {
         ...initialData,
       }
-      : { images: [], thumbnailIndex: 0, sold: false, isRecreatable: false },
+      : { images: [], thumbnailIndex: 0, categoryIds: [], sold: false, isRecreatable: false },
   });
 
   const images = watch('images');
-  const categoryId = watch('categoryId');
+  const categoryIds = watch('categoryIds') || [];
   const priceCents = watch('priceCents');
   const sold = watch('sold');
   const isRecreatable = watch('isRecreatable');
@@ -195,7 +189,7 @@ export function ProductForm({
       if (productId) {
         reset(data);
       } else {
-        reset({ images: [], thumbnailIndex: 0 });
+        reset({ images: [], thumbnailIndex: 0, categoryIds: [] });
       }
       setOpen(false);
       router.refresh();
@@ -213,7 +207,7 @@ export function ProductForm({
       reset(initialData);
     } else if (!newOpen && !productId) {
       // Reset form when closing add dialog
-      reset({ images: [], thumbnailIndex: 0 });
+      reset({ images: [], thumbnailIndex: 0, categoryIds: [] });
     }
   };
 
@@ -238,47 +232,57 @@ export function ProductForm({
             )}
           </div>
           <div>
-            <Label htmlFor="categoryId" className="mb-2">{t('forms.category')}</Label>
-            <Select
-              onValueChange={(value) => setValue('categoryId', parseInt(value))}
-              value={categoryId?.toString()}
-            >
-              <SelectTrigger>
-                <SelectValue placeholder={t('forms.category')} />
-              </SelectTrigger>
-              <SelectContent>
-                {(() => {
-                  const idToParentId = new Map<number, number | null>(
-                    categories.map((c) => [c.id, c.parentId ?? null])
-                  );
-                  const computeDepth = (categoryIdLocal: number): number => {
-                    let depth = 0;
-                    let current: number | null | undefined = idToParentId.get(categoryIdLocal);
-                    const seen = new Set<number>();
-                    while (current && !seen.has(current)) {
-                      depth += 1;
-                      seen.add(current);
-                      current = idToParentId.get(current) ?? null;
-                      if (depth > 10) break;
-                    }
-                    return depth;
-                  };
-                  const withDepth = categories
-                    .map((c) => ({ ...c, depth: computeDepth(c.id) }))
-                    .sort((a, b) => {
-                      if (a.depth !== b.depth) return a.depth - b.depth;
-                      return a.title.localeCompare(b.title);
-                    });
-                  return withDepth.map((cat) => (
-                    <SelectItem key={cat.id} value={cat.id.toString()}>
-                      {`${'— '.repeat(cat.depth)}${cat.title}`}
-                    </SelectItem>
-                  ));
-                })()}
-              </SelectContent>
-            </Select>
-            {errors.categoryId && (
-              <p className="mt-1 text-sm text-destructive">{errors.categoryId.message}</p>
+            <Label htmlFor="categoryIds" className="mb-2">{t('forms.category')}</Label>
+            {(() => {
+              const idToParentId = new Map<number, number | null>(
+                categories.map((c) => [c.id, c.parentId ?? null])
+              );
+              const computeDepth = (categoryIdLocal: number): number => {
+                let depth = 0;
+                let current: number | null | undefined = idToParentId.get(categoryIdLocal);
+                const seen = new Set<number>();
+                while (current && !seen.has(current)) {
+                  depth += 1;
+                  seen.add(current);
+                  current = idToParentId.get(current) ?? null;
+                  if (depth > 10) break;
+                }
+                return depth;
+              };
+              const options: Option[] = categories
+                .map((c) => ({ ...c, depth: computeDepth(c.id) }))
+                .sort((a, b) => {
+                  if (a.depth !== b.depth) return a.depth - b.depth;
+                  return a.title.localeCompare(b.title);
+                })
+                .map((cat) => ({
+                  label: `${'— '.repeat(cat.depth)}${cat.title}`,
+                  value: cat.id.toString(),
+                }));
+
+              const selectedOptions = options.filter((o) => 
+                (categoryIds || []).map(String).includes(o.value)
+              );
+
+              return (
+                <MultipleSelector
+                  value={selectedOptions}
+                  onChange={(selected) => {
+                    const ids = selected.map((o) => parseInt(o.value));
+                    setValue('categoryIds', ids, { shouldValidate: true });
+                  }}
+                  defaultOptions={options}
+                  placeholder={t('forms.category')}
+                  emptyIndicator={
+                    <p className="text-center text-sm text-gray-600 dark:text-gray-400">
+                      {t('common.noResults')}
+                    </p>
+                  }
+                />
+              );
+            })()}
+            {errors.categoryIds && (
+              <p className="mt-1 text-sm text-destructive">{errors.categoryIds.message}</p>
             )}
           </div>
           <div>

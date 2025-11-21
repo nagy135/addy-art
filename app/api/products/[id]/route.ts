@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { auth } from '@/app/api/auth/[...nextauth]/route';
 import { db } from '@/db';
-import { products, productImages } from '@/db/schema';
+import { products, productImages, productCategories } from '@/db/schema';
 import { eq } from 'drizzle-orm';
 import { z } from 'zod';
 import { generateSlug } from '@/lib/generate-slug';
@@ -11,7 +11,7 @@ const productSchema = z
     title: z.string().min(1),
     descriptionMd: z.string().min(1),
     priceCents: z.number().min(1),
-    categoryId: z.number().min(1),
+    categoryIds: z.array(z.number().min(1)).min(1),
     images: z.array(z.string().min(1)).min(1),
     thumbnailIndex: z.number().int().min(0),
     sold: z.boolean().optional(),
@@ -37,16 +37,18 @@ export async function PUT(
     const validated = productSchema.parse(body);
 
     const thumbnailPath = validated.images[validated.thumbnailIndex];
+    const productId = parseInt(id);
+    const firstCategoryId = validated.categoryIds[0];
 
     // Determine sort order behavior when category changes
     const existing = await db.query.products.findFirst({
-      where: (products, { eq }) => eq(products.id, parseInt(id)),
+      where: (products, { eq }) => eq(products.id, productId),
     });
 
     let sortOrderToSet: number | null = existing?.sortOrder ?? null;
-    if (existing && existing.categoryId !== validated.categoryId) {
+    if (existing && existing.categoryId !== firstCategoryId) {
       const lastInNewCategory = await db.query.products.findFirst({
-        where: (products, { eq }) => eq(products.categoryId, validated.categoryId),
+        where: (products, { eq }) => eq(products.categoryId, firstCategoryId),
         orderBy: (products, { desc }) => [desc(products.sortOrder)],
       });
       sortOrderToSet = (lastInNewCategory?.sortOrder ?? 0) + 1;
@@ -59,21 +61,30 @@ export async function PUT(
         slug: generateSlug(validated.title),
         descriptionMd: validated.descriptionMd,
         priceCents: validated.priceCents,
-        categoryId: validated.categoryId,
+        categoryId: firstCategoryId, // keep for backward compatibility
         imagePath: thumbnailPath,
         sortOrder: sortOrderToSet ?? 0,
         soldAt: validated.sold ? new Date() : null,
         isRecreatable: validated.isRecreatable ?? false,
       })
-      .where(eq(products.id, parseInt(id)));
+      .where(eq(products.id, productId));
 
     // Replace product images
-    await db.delete(productImages).where(eq(productImages.productId, parseInt(id)));
+    await db.delete(productImages).where(eq(productImages.productId, productId));
     await db.insert(productImages).values(
       validated.images.map((path, index) => ({
-        productId: parseInt(id),
+        productId,
         imagePath: path,
         isThumbnail: index === validated.thumbnailIndex,
+      }))
+    );
+
+    // Replace product-category relationships
+    await db.delete(productCategories).where(eq(productCategories.productId, productId));
+    await db.insert(productCategories).values(
+      validated.categoryIds.map((categoryId) => ({
+        productId,
+        categoryId,
       }))
     );
 

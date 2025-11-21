@@ -120,6 +120,53 @@ function ensureNoteOnOrders(db: Database.Database): void {
   }
 }
 
+function migrateToManyToManyCategories(db: Database.Database): void {
+  // Create product_categories table if it doesn't exist
+  if (!tableExists(db, 'product_categories')) {
+    db.exec(`
+      CREATE TABLE product_categories (
+        product_id INTEGER NOT NULL,
+        category_id INTEGER NOT NULL,
+        PRIMARY KEY (product_id, category_id),
+        FOREIGN KEY(product_id) REFERENCES products(id) ON DELETE CASCADE,
+        FOREIGN KEY(category_id) REFERENCES categories(id) ON DELETE CASCADE
+      );
+      CREATE INDEX idx_product_categories_product_id ON product_categories(product_id);
+      CREATE INDEX idx_product_categories_category_id ON product_categories(category_id);
+    `);
+  }
+
+  // Migrate existing categoryId relationships to product_categories
+  const productsStmt = db.prepare('SELECT id, category_id FROM products WHERE category_id IS NOT NULL;');
+  const insertPivotStmt = db.prepare(
+    'INSERT OR IGNORE INTO product_categories (product_id, category_id) VALUES (?, ?);'
+  );
+  const checkExistsStmt = db.prepare(
+    'SELECT COUNT(1) as cnt FROM product_categories WHERE product_id = ? AND category_id = ?;'
+  );
+
+  const productsRows = productsStmt.all() as Array<{ id: number; category_id: number | null }>;
+  const migrate = db.transaction(() => {
+    for (const row of productsRows) {
+      if (row.category_id !== null) {
+        const exists = checkExistsStmt.get(row.id, row.category_id) as { cnt: number } | undefined;
+        if (!exists || Number(exists.cnt) === 0) {
+          insertPivotStmt.run(row.id, row.category_id);
+        }
+      }
+    }
+  });
+  migrate();
+
+  // Note: We keep categoryId column for now (nullable) for backward compatibility
+  // It can be removed later if needed
+  if (columnExists(db, 'products', 'category_id')) {
+    // Make it nullable if it's not already
+    // SQLite doesn't support ALTER COLUMN, so we'd need to recreate the table
+    // For now, we'll leave it as is and handle it in application code
+  }
+}
+
 function main(): void {
   const db = new Database(dbPath);
   try {
@@ -131,6 +178,7 @@ function main(): void {
     ensureIsRecreatableOnProducts(db);
     ensureSeenOnOrders(db);
     ensureNoteOnOrders(db);
+    migrateToManyToManyCategories(db);
     // Add future migration steps here
     console.log('Migration completed.');
   } finally {

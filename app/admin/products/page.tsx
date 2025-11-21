@@ -10,6 +10,11 @@ export default async function AdminProductsPage() {
   const allProducts = await db.query.products.findMany({
     with: {
       category: true,
+      categories: {
+        with: {
+          category: true,
+        },
+      },
       images: true,
     },
     orderBy: (products, { desc }) => [desc(products.createdAt)],

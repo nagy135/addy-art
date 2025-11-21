@@ -1,4 +1,4 @@
-import { sqliteTable, text, integer } from 'drizzle-orm/sqlite-core';
+import { sqliteTable, text, integer, primaryKey } from 'drizzle-orm/sqlite-core';
 import { relations } from 'drizzle-orm';
 
 // NextAuth tables
@@ -62,13 +62,23 @@ export const products = sqliteTable('products', {
   priceCents: integer('price_cents').notNull(),
   imagePath: text('image_path').notNull(),
   categoryId: integer('category_id')
-    .notNull()
     .references(() => categories.id, { onDelete: 'cascade' }),
   sortOrder: integer('sort_order').notNull().default(1),
   isRecreatable: integer('is_recreatable', { mode: 'boolean' }).notNull().default(false),
   soldAt: integer('sold_at', { mode: 'timestamp_ms' }),
   createdAt: integer('created_at', { mode: 'timestamp_ms' }).notNull().$defaultFn(() => new Date()),
 });
+
+export const productCategories = sqliteTable('product_categories', {
+  productId: integer('product_id')
+    .notNull()
+    .references(() => products.id, { onDelete: 'cascade' }),
+  categoryId: integer('category_id')
+    .notNull()
+    .references(() => categories.id, { onDelete: 'cascade' }),
+}, (table) => ({
+  pk: primaryKey({ columns: [table.productId, table.categoryId] }),
+}));
 
 export const productImages = sqliteTable('product_images', {
   id: integer('id').primaryKey({ autoIncrement: true }),
@@ -121,7 +131,7 @@ export const usersRelations = relations(users, ({ many }) => ({
 }));
 
 export const categoriesRelations = relations(categories, ({ many }) => ({
-  products: many(products),
+  products: many(productCategories),
 }));
 
 export const productsRelations = relations(products, ({ one, many }) => ({
@@ -129,6 +139,7 @@ export const productsRelations = relations(products, ({ one, many }) => ({
     fields: [products.categoryId],
     references: [categories.id],
   }),
+  categories: many(productCategories),
   images: many(productImages),
   orders: many(orders),
 }));
@@ -159,6 +170,17 @@ export const postImagesRelations = relations(postImages, ({ one }) => ({
   post: one(posts, {
     fields: [postImages.postId],
     references: [posts.id],
+  }),
+}));
+
+export const productCategoriesRelations = relations(productCategories, ({ one }) => ({
+  product: one(products, {
+    fields: [productCategories.productId],
+    references: [products.id],
+  }),
+  category: one(categories, {
+    fields: [productCategories.categoryId],
+    references: [categories.id],
   }),
 }));
 

@@ -1,8 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { auth } from '@/app/api/auth/[...nextauth]/route';
 import { db } from '@/db';
-import { products } from '@/db/schema';
-import { eq, and, isNull } from 'drizzle-orm';
+import { products, productCategories } from '@/db/schema';
+import { eq, and, isNull, inArray } from 'drizzle-orm';
 import { z } from 'zod';
 
 export const runtime = 'nodejs';
@@ -20,9 +20,21 @@ export async function GET(
       return NextResponse.json({ error: 'Invalid category ID' }, { status: 400 });
     }
 
+    // Get product IDs that belong to this category via pivot table
+    const productCategoryRows = await db
+      .select({ productId: productCategories.productId })
+      .from(productCategories)
+      .where(eq(productCategories.categoryId, categoryId));
+    
+    const productIds = productCategoryRows.map((row) => row.productId);
+    
+    if (productIds.length === 0) {
+      return NextResponse.json([]);
+    }
+
     const categoryProducts = await db.query.products.findMany({
-      where: (products, { eq, and, isNull }) => 
-        and(eq(products.categoryId, categoryId), isNull(products.soldAt)),
+      where: (products, { and, isNull, inArray: inArrayFn }) => 
+        and(inArrayFn(products.id, productIds), isNull(products.soldAt)),
       with: { images: true },
       orderBy: (products, { asc, desc }) => [asc(products.sortOrder), desc(products.createdAt)],
     });
@@ -63,10 +75,22 @@ export async function PUT(
     const body = await request.json();
     const { orderedProductIds } = reorderSchema.parse(body);
 
+    // Get product IDs that belong to this category via pivot table
+    const productCategoryRows = await db
+      .select({ productId: productCategories.productId })
+      .from(productCategories)
+      .where(eq(productCategories.categoryId, categoryId));
+    
+    const productIds = productCategoryRows.map((row) => row.productId);
+    
+    if (productIds.length === 0) {
+      return NextResponse.json({ error: 'No products in category' }, { status: 400 });
+    }
+
     const existingProducts = await db
       .select({ id: products.id })
       .from(products)
-      .where(and(eq(products.categoryId, categoryId), isNull(products.soldAt)));
+      .where(and(inArray(products.id, productIds), isNull(products.soldAt)));
     const existingIds = new Set(existingProducts.map((p) => p.id));
 
     if (existingIds.size !== orderedProductIds.length) {

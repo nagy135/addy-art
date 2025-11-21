@@ -1,7 +1,7 @@
 import { notFound } from 'next/navigation';
 import { db } from '@/db';
-import { categories, products } from '@/db/schema';
-import { eq, or } from 'drizzle-orm';
+import { categories, products, productCategories } from '@/db/schema';
+import { eq, or, and, isNull, inArray, asc, desc } from 'drizzle-orm';
 import { Banner } from '@/components/Banner';
 import { CategoriesNav } from '@/components/CategoriesNav';
 import { SubcategorySelector } from '@/components/SubcategorySelector';
@@ -52,17 +52,38 @@ export default async function CategoryPage({
     productCategoryIds = [category.id, ...subcategories.map((sub) => sub.id)];
   }
 
+  // Get product IDs that belong to any of the selected categories via pivot table
+  // This query correctly handles products that belong to multiple categories
+  const productCategoryRows = await db
+    .select({ productId: productCategories.productId })
+    .from(productCategories)
+    .where(inArray(productCategories.categoryId, productCategoryIds));
+
+  const productIds = [...new Set(productCategoryRows.map((row) => row.productId))];
+
   // Fetch products from the selected categories (excluding sold items)
-  const allProducts = await db.query.products.findMany({
-    where: (products, { eq, or, and, isNull }) => {
-      const categoryCondition = productCategoryIds.length === 1
-        ? eq(products.categoryId, productCategoryIds[0])
-        : or(...productCategoryIds.map((id) => eq(products.categoryId, id)));
-      return and(categoryCondition, isNull(products.soldAt));
-    },
-    with: { images: true },
-    orderBy: (products, { asc, desc }) => [asc(products.sortOrder), desc(products.createdAt)],
-  });
+  // Products with multiple categories will appear in all their assigned categories
+  // Use raw query builder for inArray to ensure it works correctly
+  const allProducts = productIds.length > 0
+    ? await db
+      .select()
+      .from(products)
+      .where(and(inArray(products.id, productIds), isNull(products.soldAt)))
+      .orderBy(asc(products.sortOrder), desc(products.createdAt))
+    : [];
+
+  // Fetch images separately for each product
+  const productsWithImages = await Promise.all(
+    allProducts.map(async (product) => {
+      const productImagesList = await db.query.productImages.findMany({
+        where: (images, { eq }) => eq(images.productId, product.id),
+      });
+      return {
+        ...product,
+        images: productImagesList,
+      };
+    })
+  );
 
   return (
     <>
@@ -72,7 +93,7 @@ export default async function CategoryPage({
         <h2 id="category-title" className="mb-5 text-3xl font-bold">{category.title}</h2>
         <SubcategorySelector subcategories={subcategories} currentCategorySlug={slug} />
         <div id="products">
-          <ProductsGrid products={allProducts} categoryKey={`${slug}-${subcategory || 'all'}`} />
+          <ProductsGrid products={productsWithImages} categoryKey={`${slug}-${subcategory || 'all'}`} />
         </div>
       </div>
     </>

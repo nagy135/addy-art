@@ -26,6 +26,11 @@ export default async function ProductPage({
     where: eq(products.slug, slug),
     with: {
       category: true,
+      categories: {
+        with: {
+          category: true,
+        },
+      },
       images: true,
     },
   });
@@ -41,16 +46,30 @@ export default async function ProductPage({
   return (
     <>
       <Banner />
-      <CategoriesNav categories={categories} activeCategorySlug={product.category?.slug} />
+      <CategoriesNav
+        categories={categories}
+        activeCategorySlug={
+          product.categories && product.categories.length > 0
+            ? product.categories[0].category.slug
+            : product.category?.slug
+        }
+      />
       <div className="container mx-auto max-w-4xl px-4 py-8">
-        {product.category && (
-          <Link href={`/category/${product.category.slug}`} className="mb-6 inline-block">
+        {(product.categories && product.categories.length > 0) || product.category ? (
+          <Link
+            href={`/category/${
+              product.categories && product.categories.length > 0
+                ? product.categories[0].category.slug
+                : product.category?.slug
+            }`}
+            className="mb-6 inline-block"
+          >
             <Button variant="outline" size="sm">
               <ArrowLeft className="mr-2 h-4 w-4" />
               {t('common.back')}
             </Button>
           </Link>
-        )}
+        ) : null}
         <div className="grid gap-8 md:grid-cols-2">
           <ProductGallery
             images={
