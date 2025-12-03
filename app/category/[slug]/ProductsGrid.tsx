@@ -16,27 +16,19 @@ type Product = {
   priceCents: number;
   imagePath: string;
   images?: { imagePath: string; isThumbnail: boolean }[];
-  soldAt?: Date | null;
   isRecreatable: boolean;
 };
 
 const ProductCard = ({ product }: { product: Product }) => {
   const { t } = useI18n();
-  const isSold = !!product.soldAt;
-  const canOrder = !isSold || product.isRecreatable;
 
   return (
     <div>
       <p className="font-bold md:text-4xl text-xl text-white">{product.title}</p>
       <p className="font-normal text-base text-white mt-2">
         {formatPrice(product.priceCents)}
-        {isSold && !product.isRecreatable && (
-          <span className="ml-2 inline-block rounded-full bg-red-600 px-2 py-1 text-xs font-bold text-white">
-            {t('common.sold')}
-          </span>
-        )}
-        {isSold && product.isRecreatable && (
-            <span className="ml-2 inline-block rounded-full bg-amber-600 px-2 py-1 text-xs font-bold text-white">
+        {product.isRecreatable && (
+          <span className="ml-2 inline-block rounded-full bg-amber-600 px-2 py-1 text-xs font-bold text-white">
             {t('common.isRecreatable')}
           </span>
         )}
@@ -52,7 +44,7 @@ const ProductCard = ({ product }: { product: Product }) => {
           Detail produktu
         </Link>
 
-        {canOrder && <ProductOrderDialog productId={product.id} productTitle={product.title} />}
+        <ProductOrderDialog productId={product.id} productTitle={product.title} />
       </div>
     </div>
   );

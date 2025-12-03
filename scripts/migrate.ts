@@ -96,12 +96,6 @@ function ensureSortOrderOnProducts(db: Database.Database): void {
   backfill();
 }
 
-function ensureSoldAtOnProducts(db: Database.Database): void {
-  if (!columnExists(db, 'products', 'sold_at')) {
-    db.exec(`ALTER TABLE products ADD COLUMN sold_at INTEGER;`);
-  }
-}
-
 function ensureIsRecreatableOnProducts(db: Database.Database): void {
   if (!columnExists(db, 'products', 'is_recreatable')) {
     db.exec(`ALTER TABLE products ADD COLUMN is_recreatable INTEGER NOT NULL DEFAULT 0;`);
@@ -174,7 +168,6 @@ function main(): void {
     ensureParentIdOnCategories(db);
     ensureProductImagesTableAndBackfill(db);
     ensureSortOrderOnProducts(db);
-    ensureSoldAtOnProducts(db);
     ensureIsRecreatableOnProducts(db);
     ensureSeenOnOrders(db);
     ensureNoteOnOrders(db);

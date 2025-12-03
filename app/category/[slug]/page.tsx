@@ -1,7 +1,7 @@
 import { notFound } from 'next/navigation';
 import { db } from '@/db';
 import { categories, products, productCategories } from '@/db/schema';
-import { eq, or, and, isNull, inArray, asc, desc } from 'drizzle-orm';
+import { eq, or, and, inArray, asc, desc } from 'drizzle-orm';
 import { Banner } from '@/components/Banner';
 import { CategoriesNav } from '@/components/CategoriesNav';
 import { SubcategorySelector } from '@/components/SubcategorySelector';
@@ -61,14 +61,14 @@ export default async function CategoryPage({
 
   const productIds = [...new Set(productCategoryRows.map((row) => row.productId))];
 
-  // Fetch products from the selected categories (excluding sold items)
+  // Fetch products from the selected categories
   // Products with multiple categories will appear in all their assigned categories
   // Use raw query builder for inArray to ensure it works correctly
   const allProducts = productIds.length > 0
     ? await db
       .select()
       .from(products)
-      .where(and(inArray(products.id, productIds), isNull(products.soldAt)))
+      .where(inArray(products.id, productIds))
       .orderBy(asc(products.sortOrder), desc(products.createdAt))
     : [];
 

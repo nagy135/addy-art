@@ -14,7 +14,6 @@ const productSchema = z
     categoryIds: z.array(z.number().min(1)).min(1),
     images: z.array(z.string().min(1)).min(1),
     thumbnailIndex: z.number().int().min(0),
-    sold: z.boolean().optional(),
     isRecreatable: z.boolean().optional(),
   })
   .refine((data) => data.thumbnailIndex < data.images.length, {
@@ -64,7 +63,6 @@ export async function PUT(
         categoryId: firstCategoryId, // keep for backward compatibility
         imagePath: thumbnailPath,
         sortOrder: sortOrderToSet ?? 0,
-        soldAt: validated.sold ? new Date() : null,
         isRecreatable: validated.isRecreatable ?? false,
       })
       .where(eq(products.id, productId));

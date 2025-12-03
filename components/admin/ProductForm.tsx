@@ -33,7 +33,6 @@ function createProductSchema(t: (key: string) => string) {
       categoryIds: z.array(z.number().min(1)).min(1, t('forms.categoryRequired')),
       images: z.array(z.string().min(1, t('forms.imageRequired'))).min(1, t('forms.imageRequired')),
       thumbnailIndex: z.number().int().min(0),
-      sold: z.boolean().optional(),
       isRecreatable: z.boolean().optional(),
     })
     .refine((data) => data.thumbnailIndex < data.images.length, {
@@ -57,16 +56,15 @@ export function ProductForm({
   categories,
 }: {
   productId?: number;
-  initialData?: {
-    title: string;
-    descriptionMd: string;
-    priceCents: number;
-    categoryIds: number[];
-    images: string[];
-    thumbnailIndex: number;
-    sold?: boolean;
-    isRecreatable?: boolean;
-  };
+    initialData?: {
+      title: string;
+      descriptionMd: string;
+      priceCents: number;
+      categoryIds: number[];
+      images: string[];
+      thumbnailIndex: number;
+      isRecreatable?: boolean;
+    };
   categories: Category[];
 }) {
   const { t } = useI18n();
@@ -92,13 +90,12 @@ export function ProductForm({
       ? {
         ...initialData,
       }
-      : { images: [], thumbnailIndex: 0, categoryIds: [], sold: false, isRecreatable: false },
+      : { images: [], thumbnailIndex: 0, categoryIds: [], isRecreatable: false },
   });
 
   const images = watch('images');
   const categoryIds = watch('categoryIds') || [];
   const priceCents = watch('priceCents');
-  const sold = watch('sold');
   const isRecreatable = watch('isRecreatable');
 
   // Convert cents to euros for display
@@ -396,35 +393,14 @@ export function ProductForm({
           <div className="flex items-center space-x-2">
             <input
               type="checkbox"
-              id="sold"
-              checked={sold || false}
-              onChange={(e) => {
-                const isSold = e.target.checked;
-                setValue('sold', isSold, { shouldValidate: true });
-                if (!isSold) {
-                   setValue('isRecreatable', false, { shouldValidate: true });
-                }
-              }}
+              id="isRecreatable"
+              checked={isRecreatable || false}
+              onChange={(e) => setValue('isRecreatable', e.target.checked, { shouldValidate: true })}
               className="h-4 w-4 rounded border-gray-300"
             />
-            <Label htmlFor="sold" className="mb-0 cursor-pointer">
-              {t('forms.sold')}
+            <Label htmlFor="isRecreatable" className="mb-0 cursor-pointer">
+              {t('forms.isRecreatable')}
             </Label>
-            
-            {sold && (
-              <div className="flex items-center space-x-2 ml-6">
-                <input
-                  type="checkbox"
-                  id="isRecreatable"
-                  checked={isRecreatable || false}
-                  onChange={(e) => setValue('isRecreatable', e.target.checked, { shouldValidate: true })}
-                  className="h-4 w-4 rounded border-gray-300"
-                />
-                <Label htmlFor="isRecreatable" className="mb-0 cursor-pointer">
-                  {t('forms.isRecreatable')}
-                </Label>
-              </div>
-            )}
           </div>
           <div>
             <Label htmlFor="descriptionMd" className="mb-2">{t('forms.descriptionMarkdown')}</Label>

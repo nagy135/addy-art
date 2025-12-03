@@ -42,15 +42,8 @@ export function CategoriesNav({
   // Filter to only root categories (no parentId)
   const rootCategories = categories.filter((cat) => !cat.parentId);
 
-  // Virtual "sold" category
-  const soldCategory: Category = {
-    id: -1,
-    title: t('common.sold'),
-    slug: 'sold',
-  };
-
-  // Prepend home category and append sold category to the list
-  const allCategories = [homeCategory, ...rootCategories, soldCategory];
+  // Prepend home category to the list
+  const allCategories = [homeCategory, ...rootCategories];
 
   // Determine active category based on pathname or prop
   const getActiveCategorySlug = () => {
@@ -59,9 +52,6 @@ export function CategoriesNav({
     }
     if (pathname === '/') {
       return '';
-    }
-    if (pathname === '/sold') {
-      return 'sold';
     }
     const categoryMatch = pathname.match(/^\/category\/([^/]+)/);
     if (categoryMatch) {
@@ -81,9 +71,7 @@ export function CategoriesNav({
             const isActive = activeSlug === category.slug;
             const href = category.id === 0 
               ? '/' 
-              : category.id === -1 
-                ? '/sold' 
-                : `/category/${category.slug}`;
+              : `/category/${category.slug}`;
             return (
               <Button 
                 key={category.id} 
@@ -94,7 +82,7 @@ export function CategoriesNav({
                   href={href}
                   scroll={category.id === 0}
                 >
-                  <span className={category.id === -1 ? 'uppercase' : 'capitalize'}>
+                  <span className="capitalize">
                     {category.id === 0 ? t('common.home') : category.title}
                   </span>
                 </Link>
@@ -121,9 +109,7 @@ export function CategoriesNav({
                   const isActive = activeSlug === category.slug;
                   const href = category.id === 0 
                     ? '/' 
-                    : category.id === -1 
-                      ? '/sold' 
-                      : `/category/${category.slug}`;
+                    : `/category/${category.slug}`;
                   return (
                     <Button
                       key={category.id}
@@ -136,7 +122,7 @@ export function CategoriesNav({
                         href={href}
                         scroll={category.id === 0}
                       >
-                        <span className={category.id === -1 ? 'uppercase' : ''}>
+                        <span>
                           {category.id === 0 ? t('common.home') : category.title}
                         </span>
                       </Link>

@@ -24,8 +24,8 @@ export const sk = {
     noPosts: 'Zatiaľ žiadne príspevky.',
     back: 'Späť',
     all: 'Všetko',
-    sold: 'Predané',
     isRecreatable: 'Znova vyrobiteľné',
+    recreatableMessage: 'Tento produkt je už predaný, môžete požiadať o jeho znovuvyrobenie s úpravami',
   },
   admin: {
     dashboard: 'Panel Správcu',
@@ -85,7 +85,6 @@ export const sk = {
     descriptionMarkdown: 'Popis (Markdown)',
     contentMarkdown: 'Obsah (Markdown)',
     published: 'Publikované',
-    sold: 'Predané',
     isRecreatable: 'Znova vyrobiteľné',
     save: 'Uložiť',
     saving: 'Ukladá sa...',

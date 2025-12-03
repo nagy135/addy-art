@@ -23,7 +23,6 @@ type Product = {
   descriptionMd: string;
   priceCents: number;
   imagePath: string;
-  soldAt?: Date | null;
   isRecreatable?: boolean;
   images?: { id: number; imagePath: string; isThumbnail: boolean }[];
   category: {
@@ -89,7 +88,7 @@ export function ProductsList({
             <TableHead>{t('tables.name')}</TableHead>
             <TableHead>{t('forms.category')}</TableHead>
             <TableHead>{t('tables.price')}</TableHead>
-            <TableHead>{t('forms.sold')}</TableHead>
+            <TableHead>{t('forms.isRecreatable')}</TableHead>
             <TableHead className="text-right">{t('tables.actions')}</TableHead>
           </TableRow>
         </TableHeader>
@@ -117,9 +116,9 @@ export function ProductsList({
               </TableCell>
               <TableCell>{formatPrice(product.priceCents)}</TableCell>
               <TableCell>
-                {product.soldAt ? (
-                  <span title={product.isRecreatable ? t('common.isRecreatable') : t('common.sold')}>
-                    ✓{product.isRecreatable && ' 🔄'}
+                {product.isRecreatable ? (
+                  <span title={t('common.isRecreatable')}>
+                    ✓ 🔄
                   </span>
                 ) : (
                   ''
@@ -142,7 +141,6 @@ export function ProductsList({
                       images: product.images?.map((i) => i.imagePath) || [product.imagePath],
                       thumbnailIndex:
                         product.images?.findIndex((i) => i.isThumbnail) ?? 0,
-                      sold: !!product.soldAt,
                       isRecreatable: product.isRecreatable,
                     }}
                     categories={categories}

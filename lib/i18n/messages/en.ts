@@ -24,8 +24,8 @@ export const en = {
     noPosts: 'No blog posts yet.',
     back: 'Back',
     all: 'All',
-    sold: 'Sold',
     isRecreatable: 'Recreatable',
+    recreatableMessage: 'This item is already sold, you can request its recreation with modifications',
   },
   admin: {
     dashboard: 'Admin Panel',
@@ -85,7 +85,6 @@ export const en = {
     descriptionMarkdown: 'Description (Markdown)',
     contentMarkdown: 'Content (Markdown)',
     published: 'Published',
-    sold: 'Sold',
     isRecreatable: 'Recreatable',
     save: 'Save',
     saving: 'Saving...',
