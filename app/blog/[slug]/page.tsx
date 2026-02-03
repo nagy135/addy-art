@@ -92,6 +92,7 @@ export default async function BlogPostPage({
     where: eq(posts.slug, slug),
     with: {
       images: true,
+      author: true,
     },
   });
 
@@ -173,4 +174,3 @@ export default async function BlogPostPage({
     </>
   );
 }
-
