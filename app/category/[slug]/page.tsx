@@ -1,4 +1,5 @@
 import { notFound } from 'next/navigation';
+import type { Metadata } from 'next';
 import { db } from '@/db';
 import { categories, products, productCategories } from '@/db/schema';
 import { eq, or, and, inArray, asc, desc } from 'drizzle-orm';
@@ -8,6 +9,58 @@ import { SubcategorySelector } from '@/components/SubcategorySelector';
 import { ProductsGrid } from './ProductsGrid';
 
 export const dynamic = 'force-dynamic';
+
+export async function generateMetadata({
+  params,
+  searchParams,
+}: {
+  params: Promise<{ slug: string }>;
+  searchParams: Promise<{ subcategory?: string }>;
+}): Promise<Metadata> {
+  const { slug } = await params;
+  const { subcategory } = await searchParams;
+
+  const category = await db.query.categories.findFirst({
+    where: eq(categories.slug, slug),
+  });
+
+  if (!category) {
+    return {
+      title: 'Category Not Found',
+    };
+  }
+
+  let title = `${category.title} Products - Shop at Addy Art`;
+  let description = `Browse our collection of ${category.title.toLowerCase()} art pieces and handmade items.`;
+
+  if (subcategory) {
+    const subcategoryId = parseInt(subcategory);
+    if (!isNaN(subcategoryId)) {
+      const subcat = await db.query.categories.findFirst({
+        where: eq(categories.id, subcategoryId),
+      });
+      if (subcat) {
+        title = `${subcat.title} - ${category.title} - Addy Art Shop`;
+        description = `Discover our ${subcat.title} collection within ${category.title.toLowerCase()}.`;
+      }
+    }
+  }
+
+  return {
+    title,
+    description,
+    openGraph: {
+      title,
+      description,
+      type: 'website',
+    },
+    twitter: {
+      card: 'summary',
+      title,
+      description,
+    },
+  };
+}
 
 export default async function CategoryPage({
   params,
@@ -85,8 +138,32 @@ export default async function CategoryPage({
     })
   );
 
+  // Generate JSON-LD structured data for CollectionPage
+  const baseUrlSchema = process.env.NEXT_PUBLIC_BASE_URL || 'https://addyart.eu';
+  const collectionSchema = {
+    '@context': 'https://schema.org/',
+    '@type': 'CollectionPage',
+    name: category.title,
+    description: `Browse our ${category.title.toLowerCase()} collection`,
+    url: `${baseUrlSchema}/category/${category.slug}`,
+    numberOfItems: productsWithImages.length,
+    mainEntity: {
+      '@type': 'ItemList',
+      itemListElement: productsWithImages.slice(0, 10).map((product, index) => ({
+        '@type': 'ListItem',
+        position: index + 1,
+        name: product.title,
+        url: `${baseUrlSchema}/products/${product.slug}`,
+      })),
+    },
+  };
+
   return (
     <>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(collectionSchema) }}
+      />
       <Banner />
       <CategoriesNav categories={allCategories} />
       <div className="container mx-auto px-4 py-4">
